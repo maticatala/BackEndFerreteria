@@ -3,6 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { ProductsModule } from './products/products.module';
+
 
 @Module({
   imports: [
@@ -14,9 +16,10 @@ import { AuthModule } from './auth/auth.module';
       password: '123456789',
       database: 'ecommerce',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, //En produccion se recomiendo utilizar migración
+      synchronize: true, 
     }),
     AuthModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
