@@ -81,6 +81,9 @@ export class AuthService {
     };
   }
 
+  async findAll() {
+    return this.userRepository.find();
+  }
   
   async pagination(param: PaginationQueryDto) {
     const { pageSize = 3, page } = param;

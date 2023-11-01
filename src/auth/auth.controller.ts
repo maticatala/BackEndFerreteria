@@ -14,12 +14,17 @@ export class AuthController {
     private readonly authService: AuthService,
   ) { }
   
+  // @UseGuards( AuthGuard )
+  // @Get()
+  // usersPagination(@Query() pagination: PaginationQueryDto): Promise<PaginationResponseDto<User>> {
+
+  //   return this.authService.pagination(pagination);
+    
+  // }
   @UseGuards( AuthGuard )
   @Get()
-  usersPagination(@Query() pagination: PaginationQueryDto): Promise<PaginationResponseDto<User>> {
-
-    return this.authService.pagination(pagination);
-    
+  findAll(): Promise<User[]> {
+    return this.authService.findAll();
   }
 
   /*
