@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './category.entity';
 import { Repository } from 'typeorm';
@@ -10,40 +10,35 @@ export class CategoriesService {
   constructor(@InjectRepository(Category) private categoryRepository: Repository<Category>){}
 
   async createCategory(category: CreateCategoryDto){
-    const categoryFound = await this.categoryRepository.findOne({
-      where: ({
-        categoryName : category.categoryName
-      })
-    })
+    try {
+      const newCategory = this.categoryRepository.create(category);
+      await this.categoryRepository.save(newCategory);
+      return newCategory; 
 
-    if(categoryFound){
-      return new HttpException('Category already exists', HttpStatus.CONFLICT)
+    } catch (error) {
+      if (error.errno === 1062) {
+        throw new BadRequestException(`${category.categoryName} alredy exists!`);
+      }
+      throw new InternalServerErrorException('Something terrible happen!');
     }
-
-    const newCategory = this.categoryRepository.create(category)
-    return this.categoryRepository.save(newCategory)
-
   }
   
   async getCategories(){
      return this.categoryRepository.find()
   }
 
-  // Se filtra en el front
-  // async getCategoryById(id: number){
-  //   const categoryFound = await this.categoryRepository.findOne({
-  //     where: ({
-  //       id
-  //     })
-  //   })
+  async getCategoryById(id: number){
+    const categoryFound = await this.categoryRepository.findOne({
+      where: ({
+        id
+      })
+    });
 
-  //   if(!categoryFound){
-  //     return new HttpException('Category not found', HttpStatus.NOT_FOUND)
-  //   }
+    if(!categoryFound) throw new BadRequestException(`category id ${id} does not exist`);
 
-  //   return categoryFound
+    return categoryFound;
 
-  // }
+  }
 
 
 }
