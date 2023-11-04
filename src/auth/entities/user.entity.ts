@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import { Direction } from "src/directions/entities/direction.entity";
 import { Roles } from "../interfaces";
 
 @Entity({ name: 'users' })
@@ -25,4 +26,7 @@ export class User {
   @Column({ type: 'enum', enum: Roles, default: Roles.user})
   rol: Roles;
 
+  @OneToMany(() => Direction, (directions) => directions.id)
+  idDire: Direction[];
 }
+

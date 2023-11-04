@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { PriceHistoryModule } from './price_history/price_history.module';
+import { DirectionsModule } from './directions/directions.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { PriceHistoryModule } from './price_history/price_history.module';
     AuthModule,
     CategoriesModule,
     ProductsModule,
-    PriceHistoryModule
+    PriceHistoryModule,
+    DirectionsModule
   ],
   controllers: [AppController],
   providers: [AppService],
