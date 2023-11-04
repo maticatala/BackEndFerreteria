@@ -1,4 +1,5 @@
-import { IsString } from "class-validator";
+import { IsString, ArrayMinSize, IsArray} from "class-validator";
+import { Category } from "src/categories/category.entity";
 
 export class CreateProductDto {
   @IsString()
@@ -7,6 +8,9 @@ export class CreateProductDto {
   @IsString()
   description: string;
 
-  @IsString()
-  imagen?: string;
+  @IsArray()
+  @ArrayMinSize(1)
+  categories: Category[]
+
+  
 }

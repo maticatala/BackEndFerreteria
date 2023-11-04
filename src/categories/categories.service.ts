@@ -39,6 +39,7 @@ export class CategoriesService {
     return categoryFound;
 
   }
-
+  
+//falta delete y update
 
 }
