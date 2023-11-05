@@ -7,6 +7,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { PriceHistoryModule } from './price_history/price_history.module';
 import { DirectionsModule } from './directions/directions.module';
+import { PedidosModule } from './pedidos/pedidos.module';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { DirectionsModule } from './directions/directions.module';
       host: 'localhost',
       port: 3306,
       username: 'root',
-      password: 'Tepieroni10',
+      password: 'fau1234sql',
       database: 'ecommerce',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true, 
@@ -24,7 +25,8 @@ import { DirectionsModule } from './directions/directions.module';
     CategoriesModule,
     ProductsModule,
     PriceHistoryModule,
-    DirectionsModule
+    DirectionsModule,
+    PedidosModule
   ],
   controllers: [AppController],
   providers: [AppService],

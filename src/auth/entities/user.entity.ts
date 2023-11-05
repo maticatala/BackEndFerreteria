@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { Direction } from "src/directions/entities/direction.entity";
 import { Roles } from "../interfaces";
+import { Pedido } from "src/pedidos/entities/pedido.entity";
 
 @Entity({ name: 'users' })
 export class User {
@@ -27,6 +28,9 @@ export class User {
   rol: Roles;
 
   @OneToMany(() => Direction, (directions) => directions.id)
-  idDire: Direction[];
+  directions: Direction[];
+
+  @OneToMany(() => Pedido, (pedidos) => pedidos.nroPedido)
+  pedidos: Pedido[];
 }
 

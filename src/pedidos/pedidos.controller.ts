@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
-import { DirectionsService } from './directions.service';
-import { CreateDirectionDto } from './dto/create-direction.dto';
-import { UpdateDirectionDto } from './dto/update-direction.dto';
+import { PedidosService } from './pedidos.service';
+import { CreatePedidoDto } from './dto/create-pedido.dto';
+import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -18,33 +18,37 @@ const storage = diskStorage({
     cb(null, finalFileName); // Guarda el archivo con el nombre final
   },
 });
-@Controller('directions')
-export class DirectionsController {
-  constructor(private readonly directionsService: DirectionsService) {}
 
+
+@Controller('pedidos')
+export class PedidosController {
+  constructor(private readonly pedidosService: PedidosService) {}
+ 
   @Post()
   @UseInterceptors(FileInterceptor('file', { storage }))
-  create(@Body() CreateDirectionDto: CreateDirectionDto, @UploadedFile() file) {
-    return this.directionsService.create(CreateDirectionDto, file);
+  create(@Body() createProductDto: CreatePedidoDto, @UploadedFile() file) {
+    return this.pedidosService.create(createProductDto, file);
   } 
 
   @Get()
   findAll() {
-    return this.directionsService.findAll();
+    return this.pedidosService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.directionsService.findOne(+id);
+    return this.pedidosService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDirectionDto: UpdateDirectionDto) {
-    return this.directionsService.update(+id, updateDirectionDto);
+  update(@Param('id') id: string, @Body() updatePedidoDto: UpdatePedidoDto) {
+    return this.pedidosService.update(+id, updatePedidoDto);
   }
 
   @Delete(':id')
   delete(@Param('id') id: string) {
-    return this.directionsService.delete(+id);
+    return this.pedidosService.delete(+id);
   }
 }
+
+

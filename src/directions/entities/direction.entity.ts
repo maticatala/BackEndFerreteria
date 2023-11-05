@@ -3,6 +3,7 @@
 import internal from "stream";
 import  {User} from "src/auth/entities/user.entity"
 import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Pedido } from "src/pedidos/entities/pedido.entity";
 
 
 
@@ -29,6 +30,11 @@ export class Direction {
     @Column({nullable: true})
     pisoDepto:string;
     
-    @ManyToOne(()=> User, (users) => users.idDire)
+    @ManyToOne(()=> User, (users) => users.directions)
     id: User;
+
+    @OneToMany(() => Pedido, (pedidos) => pedidos.nroPedido )
+    pedidos: Pedido[];
+
+
 }

@@ -1,4 +1,5 @@
 import { Category } from "src/categories/category.entity";
+import { Pedido } from "src/pedidos/entities/pedido.entity";
 import { PriceHistory } from "src/price_history/price_history.entity";
 import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
@@ -32,6 +33,10 @@ export class Product {
   })
   categories: Category[];
 
+
   @OneToMany(() => PriceHistory, (price_history) => price_history.product)
   price: PriceHistory[];
+
+  @ManyToMany(() => Pedido,(pedido) => pedido.products)
+  pedidos:  Pedido[];
 }
