@@ -30,7 +30,7 @@ export class AuthGuard implements CanActivate {
 
       if (!user) throw new Error('User does not exists');
 
-      // if (user.rol !== 'admin') throw new Error('user without permissions');
+      if (user.rol !== 'admin') throw new Error('user without permissions');
     
       request['user'] = user;
     } catch (error) {
