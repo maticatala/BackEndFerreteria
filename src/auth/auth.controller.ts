@@ -20,9 +20,6 @@ export class AuthController {
     return this.authService.findAll();
   }
 
-  /*
-    * El controlador se encarga de escuchar las peticiones GET, POST, PUT, PATCH
-  */ 
   @UseGuards( AuthGuard )
   @Get('/check-token')
   checkToken(@Request() req: Request): LoginResponse {
@@ -50,6 +47,7 @@ export class AuthController {
     return this.authService.update(+id, updateUserDto);
   }
 
+  @UseGuards( AuthGuard )
   @Post()
   createUser(@Body() newUser: CreateUserDto) {
     return this.authService.createUser(newUser);
@@ -60,9 +58,14 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
+  @Post('/register')
+  register(@Body() newUser: RegisterDto) {
+    return this.authService.register(newUser);
+  }
+
   @UseGuards( AuthGuard )
   @Delete(':id')
-  register(@Param('id') id: number) {
+  delete(@Param('id') id: number) {
     return this.authService.delete(+id);
   }
   

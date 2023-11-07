@@ -23,7 +23,7 @@ export class AuthService {
   ) { }
   
   //Mecanismo para crear un usuario
-  async createUser(createUserDto: CreateUserDto) {
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
   
     try {
       const { password, ...userData } = createUserDto;
