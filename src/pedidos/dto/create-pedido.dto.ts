@@ -4,9 +4,7 @@ import { User } from "src/auth/entities/user.entity";
 import { Product } from "src/products/entities/product.entity";
 
 export class CreatePedidoDto {
-    @IsNumber()
-    nroPedido:number;
-
+    
     @IsDate()
     fechaPedido:Date;
 
@@ -15,10 +13,12 @@ export class CreatePedidoDto {
 
     @IsArray()
     @ArrayMinSize(1)
-    products: Product[];
+    productsIds: number[];
 
-    idDire:Direction;
+    @IsNumber()
+    directionId: number;
 
-    id:User;
+    @IsNumber()
+    userId: number;
 
 }

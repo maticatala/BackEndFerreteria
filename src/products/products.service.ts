@@ -20,11 +20,11 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto, file: any) {
     const filePath = join('./uploads', file.filename);
     try {
-      const {name, description, categories} = createProductDto;
+      const {name, description, categoriesIds} = createProductDto;
       
-      const createdCategories = await this.categoryRepository.find({where: { id: In(categories)}})
+      const createdCategories = await this.categoryRepository.find({where: { id: In(categoriesIds)}})
 
-      if (createdCategories.length !== categories.length) throw new Error('No se encontraron todas las categorias');
+      if (createdCategories.length !== categoriesIds.length) throw new Error('No se encontraron todas las categorias');
       
       const text = {
         name,

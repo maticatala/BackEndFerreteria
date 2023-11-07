@@ -27,10 +27,10 @@ export class User {
   @Column({ type: 'enum', enum: Roles, default: Roles.user})
   rol: Roles;
 
-  @OneToMany(() => Direction, (directions) => directions.id)
+  @OneToMany(() => Direction, (directions) => directions.user)
   directions: Direction[];
 
-  @OneToMany(() => Pedido, (pedidos) => pedidos.nroPedido)
+  @OneToMany(() => Pedido, (pedidos) => pedidos.user)
   pedidos: Pedido[];
 }
 

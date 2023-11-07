@@ -10,15 +10,11 @@ import { DirectionsService } from 'src/directions/directions.service';
 import { Product } from 'src/products/entities/product.entity';
 
 @Module({
-  imports:[
+  imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([User]),
-    TypeOrmModule.forFeature([Direction]),
-    TypeOrmModule.forFeature([Pedido]),
-    TypeOrmModule.forFeature([Product]),
-    
+    TypeOrmModule.forFeature([User, Direction, Pedido, Product]),
   ],
   controllers: [PedidosController],
-  providers: [PedidosService,DirectionsService],
+  providers: [PedidosService, DirectionsService],
 })
 export class PedidosModule {}

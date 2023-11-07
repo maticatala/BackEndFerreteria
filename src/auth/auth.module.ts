@@ -5,14 +5,14 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { User } from './entities/user.entity';
-import { PaginationService } from 'src/shared/services/pagination.service';
+import { Direction } from 'src/directions/entities/direction.entity';
+import { Pedido } from 'src/pedidos/entities/pedido.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
 
-    TypeOrmModule.forFeature([User]),
-    
+    TypeOrmModule.forFeature([User, Direction, Pedido]),
     //* Configuracion del JWT (Json Web Token), secret obtiene la llave secreta que tenemos en el archivo .env para crear "encriptar" el JWT, signOption indica duración que tiene el JWT, en este caso, expira a las 6 horas,es una medida de seguridad.
     JwtModule.register({
       global: true,
@@ -21,6 +21,6 @@ import { PaginationService } from 'src/shared/services/pagination.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PaginationService],
+  providers: [AuthService],
 })
 export class AuthModule {}

@@ -12,15 +12,15 @@ export class Pedido {
     @Column({type: 'datetime', default:() => 'CURRENT_TIMESTAMP'})
     fechaPedido: Date;
 
-    @Column({ type: 'date', nullable: true })
+    @Column({ type: 'datetime', nullable: true })
     fechaEntrega: Date;
 
 
-    @ManyToOne(() => Direction, (directions) => directions.idDire)
-    directions:Direction;
+    @ManyToOne(() => Direction, (directions) => directions.pedidos)
+    direction: Direction;
 
-    @ManyToOne(()=> User, (users) => users.id)
-    pedidos:User;
+    @ManyToOne(()=> User, (users) => users.pedidos)
+    user:User;
 
     @ManyToMany(() => Product, (product) => product.pedidos)
     @JoinTable({

@@ -4,13 +4,14 @@ import internal from "stream";
 import  {User} from "src/auth/entities/user.entity"
 import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { Pedido } from "src/pedidos/entities/pedido.entity";
+import { IsOptional } from "class-validator";
 
 
 
 @Entity({name: 'directions'})
 export class Direction {
     @PrimaryGeneratedColumn()
-    idDire: number;
+    id: number;
 
     @Column()
     codigoPostal: string;
@@ -28,12 +29,13 @@ export class Direction {
     numero:string;
 
     @Column({nullable: true})
+    @IsOptional()
     pisoDepto:string;
     
     @ManyToOne(()=> User, (users) => users.directions)
-    id: User;
+    user: User;
 
-    @OneToMany(() => Pedido, (pedidos) => pedidos.nroPedido )
+    @OneToMany(() => Pedido, (pedidos) => pedidos.direction )
     pedidos: Pedido[];
 
 

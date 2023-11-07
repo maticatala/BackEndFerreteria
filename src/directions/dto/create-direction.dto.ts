@@ -1,11 +1,8 @@
-import { ArrayMinSize, IsArray, IsNumber, IsString } from "class-validator";
+import { ArrayMinSize, IsArray, IsNumber, IsOptional, IsString } from "class-validator";
 import { User } from "src/auth/entities/user.entity";
 import { Pedido } from "src/pedidos/entities/pedido.entity";
  
 export class CreateDirectionDto {
-
-    @IsNumber()
-    idDire: number;
 
     @IsString()
     codigoPostal: string;
@@ -25,11 +22,7 @@ export class CreateDirectionDto {
     @IsString()
     pisoDepto: string;
 
-    @IsArray()
-    @ArrayMinSize(0)
-    pedidos: Pedido[]
 
-    id: number;
 }
 
     

@@ -4,8 +4,5 @@ import { IsArray, IsOptional } from 'class-validator';
 
 export class UpdatePedidoDto extends PartialType(CreatePedidoDto) {
 
-    @IsArray()
-    @IsOptional()
-    pedidosId?:number[];
 
 }

@@ -10,7 +10,6 @@ export class CreateProductDto {
 
   @IsArray()
   @ArrayMinSize(1)
-  categories: Category[]
+  categoriesIds: number[]
 
-  
 }

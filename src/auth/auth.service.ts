@@ -9,7 +9,6 @@ import { User } from './entities/user.entity';
 import { JwtPayload, LoginResponse, Roles } from './interfaces';;
 import { LoginDto, CreateUserDto, RegisterDto, PaginationQueryDto } from './dto';
 import { PaginationResponseDto } from '../shared/interfaces/pagination-response.dto';
-import { PaginationService } from 'src/shared/services/pagination.service';
 
 
 @Injectable()
@@ -17,7 +16,6 @@ export class AuthService {
 
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
-    private readonly paginationService: PaginationService,
     
     private jwtService: JwtService,
   ) { }
@@ -85,23 +83,7 @@ export class AuthService {
     return this.userRepository.find();
   }
   
-  async pagination(param: PaginationQueryDto) {
-    const { pageSize = 3, page } = param;
-
-    // Obtener los usuarios de la base de datos
-    const paginatedData = await this.paginationService.paginate(this.userRepository, page, pageSize);
-    
-    // Eliminar el campo de contraseña de cada usuario en los resultados
-    const resultsWithoutPassword = paginatedData.results.map(user => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    });
-
-    // Reemplazar los resultados con los resultados sin contraseña
-    paginatedData.results = resultsWithoutPassword;
-
-    return paginatedData;
-  }
+  
   
   async findUserById(id: number): Promise<User> {
     

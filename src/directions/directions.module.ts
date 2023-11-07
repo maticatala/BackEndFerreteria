@@ -8,15 +8,15 @@ import { Pedido } from 'src/pedidos/entities/pedido.entity';
 import { Direction } from './entities/direction.entity';
 import { PedidosService } from 'src/pedidos/pedidos.service';
 import { Product } from 'src/products/entities/product.entity';
+import { AuthController } from 'src/auth/auth.controller';
+import { PedidosController } from 'src/pedidos/pedidos.controller';
+import { AuthService } from 'src/auth/auth.service';
 @Module({
   imports:[
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([User]),
-    TypeOrmModule.forFeature([Direction]),
-    TypeOrmModule.forFeature([Pedido]),
-    TypeOrmModule.forFeature([Product]),
+    TypeOrmModule.forFeature([User, Direction, Pedido, Product]),
   ],
-  controllers: [DirectionsController],
-  providers: [DirectionsService,PedidosService]
+  controllers: [DirectionsController, AuthController, PedidosController],
+  providers: [DirectionsService,PedidosService, AuthService]
 })
 export class DirectionsModule {}

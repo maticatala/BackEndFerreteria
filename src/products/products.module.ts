@@ -5,12 +5,14 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Category } from 'src/categories/category.entity';
+import { Pedido } from 'src/pedidos/entities/pedido.entity';
 
 @Module({
   imports:[
     ConfigModule.forRoot(),
     TypeOrmModule.forFeature([Product]),
     TypeOrmModule.forFeature([Category]),
+    TypeOrmModule.forFeature([Pedido]),
     
   ],
   controllers: [ProductsController],

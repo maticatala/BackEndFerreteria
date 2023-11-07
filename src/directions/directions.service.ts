@@ -17,28 +17,16 @@ export class DirectionsService {
     @InjectRepository(Direction) private directionRepository: Repository<Direction>
   ) {}
 
-  async create(crearDirection: CreateDirectionDto, file: any) {
-    const filePath = join('./uploads', file.filename);
+  async createDirection(id: number, crearDirection: CreateDirectionDto) {
+
     try {
-      const {codigoPostal,provincia, localidad, calle,numero,pisoDepto} = crearDirection;
+      const user = await this.userRepository.findOne({ where: { id } });
+      if (!user) throw new Error(`User ${id} does not exists!`);
+
+      const newDirection = this.directionRepository.create(crearDirection);
+      newDirection.user = user;
       
-      const text = {
-        
-        codigoPostal,
-        provincia,
-        localidad,
-        calle,
-        numero,
-        pisoDepto
-
-      }
-
-      const newDirection = this.directionRepository.create(text)
-
-      console.log(newDirection);
-
-      await this.directionRepository.save(newDirection)
-      return newDirection
+      return this.directionRepository.save(newDirection);
     
     } catch (error) {
       if (!error.errno) throw new BadRequestException(`${error.message}`);
@@ -47,50 +35,53 @@ export class DirectionsService {
     }
   }
 
-  findAll() {
-    return this.directionRepository.find({
-      relations: ['directions']
-  })
+  async findAll() {
+    return await this.directionRepository.find({
+      relations: ['user']
+    })
 
   }
 
-  async findOne(idDire: number) {    // return `This action returns a #${id} product`;
+  async findOne(id: number) {    // return `This action returns a #${id} direction`;
 
     const directionFound = await this.directionRepository.findOne({
       where: {
-        idDire,
+        id,
       },
-      relations: ['products']
+      relations: ['user']
     });
   
-    if (!directionFound) throw new BadRequestException(`Direction id ${idDire} does not exists`)
+    if (!directionFound) throw new BadRequestException(`Direction id ${id} does not exists`);
+
   
     return directionFound;
   }
 
-  async update(idDire: number, product: UpdateDirectionDto) { 
-    try{
-      const {codigoPostal,provincia, localidad, calle,numero,pisoDepto,pedidosIds} = product
-      console.log(pedidosIds);
+  async findAllByUserId(userId: number) {
+    const userFound = await this.userRepository.findOne({ where: { id: userId } });
+    
+    if (!userFound) throw new BadRequestException(`Use ${userId} does not exists!`);
+
+    return await this.directionRepository.find({
+      where: {
+        user: userFound
+      },
+      relations: ['user']
+    })
+  }
+
+  async update(id: number, updateDirectionDto: UpdateDirectionDto) { 
+    try {
+      
+      const { userId, pedidosIds } = updateDirectionDto;
+      
       const directionFound = await this.directionRepository.findOne({
         where: {
-          idDire,
+          id,
         },
       });
   
-      if (!directionFound) throw new HttpException(`Direction id ${idDire} not found`, HttpStatus.NOT_FOUND)
-  
-      if(localidad) directionFound.localidad = localidad;
-
-      if(calle) directionFound.calle = calle;
-
-      if(pisoDepto) directionFound.pisoDepto = pisoDepto;
-
-      if(numero) directionFound.numero = numero;
-
-      if(localidad) directionFound.localidad = localidad;
-  
-      if(codigoPostal) directionFound.codigoPostal = codigoPostal;
+      if (!directionFound) throw new HttpException(`Direction id ${id} not found`, HttpStatus.NOT_FOUND)
   
       if (pedidosIds) {
         
@@ -99,11 +90,18 @@ export class DirectionsService {
         if (pedidosIds.length !== updatePedidos.length){ 
           throw new HttpException('No se encontraron todos los pedidos', HttpStatus.NOT_FOUND)
          }
-  
-         directionFound.pedidos = updatePedidos; //asigna nuevas categorias al producto 
       }
+
+      if (userId) {
+        const updateUser = await this.userRepository.findOne({where: {id:userId}});
+
+        if (!updateUser) throw new BadRequestException(`Use ${userId} does not exists!`);
+      }
+
+      this.directionRepository.merge(directionFound, updateDirectionDto);
+      
   
-      return this.directionRepository.save(directionFound);
+      return await this.directionRepository.save(directionFound);
       
     } catch (error) {
       if (!error.errno) throw new BadRequestException(error.message);
@@ -111,18 +109,17 @@ export class DirectionsService {
     }
   }// fin async update
 
-  async delete(idDire: number) {    // return `This action removes a #${id} product`;
+  async delete(id: number) {    // return `This action removes a #${id} product`;
     
     const directionFound = await this.directionRepository.findOne({
       where: {
-        idDire,
-      },
-      relations: ['directions']
+        id,
+      }
     });
     
-    if (!directionFound) throw new HttpException('Product not found',HttpStatus.NOT_FOUND)
+    if (!directionFound) throw new BadRequestException(`Direction ${id} does not exists!`);
 
-    return this.directionRepository.delete({ idDire });
+    return await this.directionRepository.delete(id);
 
   }
 }
