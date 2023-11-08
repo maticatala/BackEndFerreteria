@@ -22,6 +22,9 @@ export class CreateDirectionDto {
     @IsString()
     pisoDepto: string;
 
+    @IsNumber()
+    userId:number;
+
 
 }
 

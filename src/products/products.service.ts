@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
@@ -20,25 +20,17 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto, file: any) {
     const filePath = join('./uploads', file.filename);
     try {
-      const {name, description, categoriesIds} = createProductDto;
+      const {categoriesIds} = createProductDto;
       
-      const createdCategories = await this.categoryRepository.find({where: { id: In(categoriesIds)}})
-
-      if (createdCategories.length !== categoriesIds.length) throw new Error('No se encontraron todas las categorias');
+      const createdCategories = await this.searchCategories(categoriesIds);
       
-      const text = {
-        name,
-        description,
-        imagen: filePath,
-        createdCategories
-      }
+      const newProduct = this.productRepository.create(createProductDto);
 
-      const newProduct = this.productRepository.create(text)
+      newProduct.categories = createdCategories;
 
-      console.log(newProduct);
+      newProduct.imagen = filePath;
 
-      await this.productRepository.save(newProduct)
-      return newProduct
+      return await this.productRepository.save(newProduct)
     
     } catch (error) {
       if (!error.errno) throw new BadRequestException(`${error.message}`);
@@ -51,52 +43,27 @@ export class ProductsService {
     return this.productRepository.find({
       relations: ['categories']
     })
-
-
   }
 
   async findOne(id: number) {    // return `This action returns a #${id} product`;
 
-    const productFound = await this.productRepository.findOne({
-      where: {
-        id,
-      },
-      relations: ['categories']
-    });
-  
-    if (!productFound) throw new BadRequestException(`Product id ${id} does not exists`)
-  
-    return productFound;
+    return await this.searchProduct(id);
+
   }
 
-  async update(id: number, product: UpdateProductDto) { 
+  async update(id: number, updateProductDto: UpdateProductDto) { 
     try{
-      const {  name, description, categoriesIds} = product
-      console.log(categoriesIds);
-      const productFound = await this.productRepository.findOne({
-        where: {
-            id,
-        },
-      });
-  
-      if (!productFound) throw new HttpException(`Product id ${id} not found`, HttpStatus.NOT_FOUND)
-  
-      if(name) productFound.name = name;
-  
-      if(description) productFound.description = description;
+      const { categoriesIds } = updateProductDto
+      
+      const productFound = await this.searchProduct(id);
   
       if (categoriesIds) {
-        
-        const updatedCategories = await this.categoryRepository.find({where: { id: In(categoriesIds)}});
-        
-        if (categoriesIds.length !== updatedCategories.length){ 
-          throw new HttpException('No se encontraron todas las categorias', HttpStatus.NOT_FOUND)
-         }
-  
-        productFound.categories = updatedCategories; //asigna nuevas categorias al producto 
+        productFound.categories = await this.searchCategories(categoriesIds);
       }
-  
-      return this.productRepository.save(productFound);
+      
+      this.productRepository.merge(productFound, updateProductDto);
+
+      return await this.productRepository.save(productFound);
       
     } catch (error) {
       if (!error.errno) throw new BadRequestException(error.message);
@@ -104,19 +71,35 @@ export class ProductsService {
     }
   }// fin async update
 
-  async delete(id: number) {    // return `This action removes a #${id} product`;
-    
-    const productFound = await this.productRepository.findOne({
-      where: {
-        id,
-      },
-      relations: ['categories']
-    });
-    
-    if (!productFound) throw new HttpException('Product not found',HttpStatus.NOT_FOUND)
-
+  async delete(id: number) {  // return `This action removes a #${id} product`;
+ 
+    await this.searchProduct(id);
     return this.productRepository.delete({ id });
 
   }
 
-}//fin 
+  //PRIVATE METHODS
+  private async searchProduct(productId: number): Promise<Product> {
+    const productFound = await this.productRepository.findOne({
+      where: { id: productId },
+      relations: ['categories']
+    });
+
+    if (!productFound) throw new NotFoundException(`Category ${productId} does not exists!`);
+
+    return productFound;
+  }
+
+  private async searchCategories(categoryIds: number[]): Promise<Category[]> {
+
+    const categoryFound = await this.categoryRepository.find({
+      where: { id: In(categoryIds) }
+    });
+
+    if (categoryFound.length !== categoryIds.length)
+      throw new NotFoundException('Not all categories found');
+
+    return categoryFound;
+  }
+
+}//fin

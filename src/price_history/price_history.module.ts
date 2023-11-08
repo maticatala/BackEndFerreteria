@@ -7,11 +7,11 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports:[
+  imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([PriceHistory]),
-    TypeOrmModule.forFeature([Product])],
+    TypeOrmModule.forFeature([PriceHistory, Product]),
+  ],
   providers: [PriceHistoryService],
-  controllers: [PriceHistoryController]
+  controllers: [PriceHistoryController],
 })
 export class PriceHistoryModule {}

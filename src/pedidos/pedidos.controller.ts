@@ -28,8 +28,8 @@ export class PedidosController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePedidoDto: UpdatePedidoDto) {
-    return this.pedidosService.update(+id, updatePedidoDto);
+  update(@Param('id') nroPedido: string, @Body() updatePedidoDto: UpdatePedidoDto) {
+    return this.pedidosService.update(+nroPedido, updatePedidoDto);
   }
 
   @Delete(':id')

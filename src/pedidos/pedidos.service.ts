@@ -50,8 +50,9 @@ export class PedidosService {
 
   async findAll() {
     // return `This action returns all pedidos`;
+
     return await this.pedidoRepository.find({
-      relations:['user', 'direction']
+      relations: ['user', 'direction'],
     });
   }
 
@@ -62,10 +63,10 @@ export class PedidosService {
 
   async update(nroPedido: number, updatePedidoDto: UpdatePedidoDto) {
     try {
-      const {userId, directionId, productsIds} = updatePedidoDto;
+      const { userId, directionId, productsIds } = updatePedidoDto;
 
       const pedidoFound = await this.searchPedido(nroPedido);
-      
+
       if (userId) {
         pedidoFound.user = await this.searchUser(userId);
       }
@@ -77,7 +78,6 @@ export class PedidosService {
       if (productsIds) {
         pedidoFound.products = await this.searchProducts(productsIds);
       }
-
 
       this.pedidoRepository.merge(pedidoFound, updatePedidoDto);
 
@@ -101,7 +101,7 @@ export class PedidosService {
   private async searchPedido(nroPedido: number): Promise<Pedido> {
     const pedidoFound = await this.pedidoRepository.findOne({
       where: { nroPedido },
-      relations: ['user', 'direction', 'products']
+      relations: ['user', 'direction', 'products'],
     });
 
     if (!pedidoFound)

@@ -7,8 +7,7 @@ import * as bcryptjs from 'bcryptjs'
 
 import { User } from './entities/user.entity';
 import { JwtPayload, LoginResponse, Roles } from './interfaces';;
-import { LoginDto, CreateUserDto, RegisterDto, PaginationQueryDto } from './dto';
-import { PaginationResponseDto } from '../shared/interfaces/pagination-response.dto';
+import { LoginDto, CreateUserDto, RegisterDto } from './dto';
 
 
 @Injectable()

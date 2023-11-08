@@ -15,6 +15,6 @@ import { Product } from 'src/products/entities/product.entity';
     TypeOrmModule.forFeature([User, Direction, Pedido, Product]),
   ],
   controllers: [PedidosController],
-  providers: [PedidosService, DirectionsService],
+  providers: [PedidosService],
 })
 export class PedidosModule {}

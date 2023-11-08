@@ -12,9 +12,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class DirectionsController {
   constructor(private readonly directionsService: DirectionsService) {}
 
-  @Post(':id')
-  createDirection(@Param('id', ParseIntPipe) id: number, @Body() CreateDirectionDto: CreateDirectionDto) {
-    return this.directionsService.createDirection(id, CreateDirectionDto);
+  @Post()
+  createDirection(@Body() CreateDirectionDto: CreateDirectionDto) {
+    return this.directionsService.createDirection(CreateDirectionDto);
   } 
 
   @Get()
@@ -38,7 +38,7 @@ export class DirectionsController {
   }
 
   @Delete(':id')
-  delete(@Param('id', ParseIntPipe) id: string) {
+  delete(@Param('id', ParseIntPipe) id: number) {
     return this.directionsService.delete(+id);
   }
 }

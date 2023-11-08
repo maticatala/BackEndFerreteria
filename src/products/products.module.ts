@@ -8,12 +8,10 @@ import { Category } from 'src/categories/category.entity';
 import { Pedido } from 'src/pedidos/entities/pedido.entity';
 
 @Module({
-  imports:[
+  imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([Product]),
-    TypeOrmModule.forFeature([Category]),
-    TypeOrmModule.forFeature([Pedido]),
-    
+    TypeOrmModule.forFeature([Product, Category, Pedido]),
+
   ],
   controllers: [ProductsController],
   providers: [ProductsService],

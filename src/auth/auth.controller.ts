@@ -1,11 +1,10 @@
 import { Body, Controller, Get, Param, Post, UseGuards, Request, Query } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto, CreateUserDto, PaginationQueryDto } from './dto';
+import { LoginDto, RegisterDto, CreateUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { AuthGuard } from './guards/auth.guard';
 import { LoginResponse } from './interfaces';
-import { PaginationResponseDto } from '../shared/interfaces/pagination-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -14,13 +13,7 @@ export class AuthController {
     private readonly authService: AuthService,
   ) { }
   
-  // @UseGuards( AuthGuard )
-  // @Get()
-  // usersPagination(@Query() pagination: PaginationQueryDto): Promise<PaginationResponseDto<User>> {
 
-  //   return this.authService.pagination(pagination);
-    
-  // }
   @UseGuards( AuthGuard )
   @Get()
   findAll(): Promise<User[]> {
