@@ -51,7 +51,13 @@ export class ProductsService {
 
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto) { 
+  async update(id: number, updateProductDto: UpdateProductDto, file: any) { 
+    
+    let filePath
+    console.log(file);
+    if (file){
+      filePath = join('./uploads', file.filename);
+    }
     try{
       const { categoriesIds } = updateProductDto
       
@@ -60,7 +66,9 @@ export class ProductsService {
       if (categoriesIds) {
         productFound.categories = await this.searchCategories(categoriesIds);
       }
-      
+      if (file){
+      productFound.imagen = filePath;
+      }
       this.productRepository.merge(productFound, updateProductDto);
 
       return await this.productRepository.save(productFound);
