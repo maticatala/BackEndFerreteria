@@ -7,6 +7,7 @@ import { BadRequestException, HttpException, HttpStatus, Injectable, InternalSer
 import { Pedido } from 'src/pedidos/entities/pedido.entity';
 import { User } from 'src/auth/entities/user.entity';
 import { Direction } from './entities/direction.entity';
+import { Status } from './interfaces/status.enum';
 
 @Injectable()
 export class DirectionsService {
@@ -38,13 +39,17 @@ export class DirectionsService {
 
   async findAll() {
     return await this.directionRepository.find({
+      where: {
+        isActive: Status.active
+      },
       relations: ['user'],
     });
+    
   }
 
   async findOne(id: number) {
     // return `This action returns a #${id} direction`;
-    return await this.searchUser(id);
+    return await this.searchDirection(id);
   }
 
   async findAllByUserId(userId: number) {
@@ -82,22 +87,35 @@ export class DirectionsService {
     }
   } 
 
-  async delete(id: number) {
-    // return `This action removes a #${id} product`;
-    await this.searchDirection(id);
+  // async delete(id: number) {
+  //   // return `This action removes a #${id} product`;
+  //   await this.searchDirection(id);
+    
+  //   return await this.directionRepository.delete(id);
+  // }
 
-    return await this.directionRepository.delete(id);
+
+  async logicRemove(id: number) {
+      const directionFound = await this.searchDirection(id);
+  
+      directionFound.isActive = Status.inactive;
+
+      return await this.directionRepository.save(directionFound);
   }
 
   //PRIVATE METHODS
   private async searchDirection(directionId: number): Promise<Direction> {
     const directionFound = await this.directionRepository.findOne({
-      where: { id: directionId },
+      where: { 
+        id: directionId,
+        isActive: Status.active
+       },
       relations: ['user'],
     });
 
-    if (!directionFound)
+    if (!directionFound) {
       throw new NotFoundException(`Direction ${directionId} does not exists!`);
+    }
 
     return directionFound;
   }

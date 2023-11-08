@@ -23,8 +23,8 @@ export class DirectionsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.directionsService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.directionsService.findOne(id);
   }
 
   @Get('/directions/:id')
@@ -33,12 +33,18 @@ export class DirectionsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDirectionDto: UpdateDirectionDto) {
-    return this.directionsService.update(+id, updateDirectionDto);
+  update(@Param('id',ParseIntPipe) id: number, @Body() updateDirectionDto: UpdateDirectionDto) {
+    return this.directionsService.update(id, updateDirectionDto);
   }
 
-  @Delete(':id')
-  delete(@Param('id', ParseIntPipe) id: number) {
-    return this.directionsService.delete(+id);
+  // @Delete(':id')
+  // delete(@Param('id', ParseIntPipe) id: number) {
+  //   return this.directionsService.delete(+id);
+  // }
+
+  @Patch('/delete/:id')
+  logicDelete(@Param('id', ParseIntPipe) id: number) {
+    return this.directionsService.logicRemove(id)
   }
+
 }

@@ -6,7 +6,7 @@ import { Pedido } from "src/pedidos/entities/pedido.entity";
 @Entity({ name: 'users' })
 export class User {
 
-  //TODO: implementar UUID en vez de un numero auto incremental
+//TODO: implementar UUID en vez de un numero auto incremental
   //* Establece el id como auto incremental
   @PrimaryGeneratedColumn()
   id: number;
@@ -19,7 +19,10 @@ export class User {
   password?: string;
 
   @Column()
-  name: string;
+  firstName: string;
+
+  @Column()
+  lastName: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
