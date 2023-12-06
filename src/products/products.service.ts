@@ -18,7 +18,6 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto, file: any) {
-    const filePath = join('./uploads', file.filename);
     try {
       const {categoriesIds} = createProductDto;
       
@@ -28,7 +27,7 @@ export class ProductsService {
 
       newProduct.categories = createdCategories;
 
-      newProduct.imagen = filePath;
+      newProduct.imagen = file.filename;
 
       return await this.productRepository.save(newProduct)
     
@@ -39,8 +38,8 @@ export class ProductsService {
     }
   }
 
-  findAll() {    // return `This action returns all products`;
-    return this.productRepository.find({
+  async findAll() {    // return `This action returns all products`;
+    return await this.productRepository.find({
       relations: ['categories']
     })
   }

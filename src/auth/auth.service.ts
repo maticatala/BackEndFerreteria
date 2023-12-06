@@ -1,3 +1,4 @@
+
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -7,7 +8,9 @@ import * as bcryptjs from 'bcryptjs'
 
 import { User } from './entities/user.entity';
 import { JwtPayload, LoginResponse, Roles } from './interfaces';;
-import { LoginDto, CreateUserDto, RegisterDto } from './dto';
+import { LoginDto, CreateUserDto, RegisterDto, UpdateUserDto } from './dto';
+
+
 
 
 @Injectable()
@@ -20,7 +23,7 @@ export class AuthService {
   ) { }
   
   //Mecanismo para crear un usuario
-  async createUser(createUserDto: CreateUserDto) {
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
   
     try {
       const { password, ...userData } = createUserDto;
@@ -79,10 +82,32 @@ export class AuthService {
   }
 
   async findAll() {
-    return this.userRepository.find();
+    const results = await this.userRepository.find();
+    const userWithoutPassword = results.map(user => {
+      const { password, ...userWithoutPassword } = user
+      return userWithoutPassword;
+    })
+
+    return userWithoutPassword;
   }
   
-  
+  // async pagination(param: PaginationQueryDto) {
+  //   const { pageSize = 3, page } = param;
+
+  //   // Obtener los usuarios de la base de datos
+  //   const paginatedData = await this.paginationService.paginate(this.userRepository, page, pageSize);
+    
+  //   // Eliminar el campo de contraseña de cada usuario en los resultados
+  //   const resultsWithoutPassword = paginatedData.results.map(user => {
+  //     const { password, ...userWithoutPassword } = user;
+  //     return userWithoutPassword;
+  //   });
+
+  //   // Reemplazar los resultados con los resultados sin contraseña
+  //   paginatedData.results = resultsWithoutPassword;
+
+  //   return paginatedData;
+  // }
   
   async findUserById(id: number): Promise<User> {
     
@@ -102,6 +127,23 @@ export class AuthService {
     return false; 
     
   }
+
+  async update(id:number, updateUserDto: UpdateUserDto): Promise<User> {
+    
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (!user) throw new BadRequestException(`user ${id} does not exists!`);
+
+    const editedUser = this.userRepository.merge(user, updateUserDto);
+
+    return this.userRepository.save(editedUser);
+
+  }
+
+  async delete(id: number) {
+    return await this.userRepository.delete(id);
+  }
+
   
   getJwtToken( payload: JwtPayload) {
     const token = this.jwtService.sign(payload);

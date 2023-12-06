@@ -16,7 +16,7 @@ import { PedidosModule } from './pedidos/pedidos.module';
       host: 'localhost',
       port: 3306,
       username: 'root',
-      password: 'Tepieroni10',
+      password: '123456789',
       database: 'ecommerce',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true, 

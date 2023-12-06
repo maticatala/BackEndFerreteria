@@ -1,9 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import * as path from "path";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   //* Habilitar CORS para poder consumir la API desde un lugar que no sea localhost:3000
   app.enableCors();
@@ -26,6 +28,11 @@ async function bootstrap() {
   /*
     *Inicia el servidor de tu aplicación NestJS en el puerto 3000 y bloquea la ejecución del programa hasta que el servidor esté en funcionamiento. Una vez que el servidor está escuchando en el puerto 3000, el programa continuará ejecutando cualquier otra lógica que puedas tener después de esta línea.
   */
+  
+  // const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.useStaticAssets(path.join(__dirname, "../uploads"))
+  
   await app.listen(3000);
 }
 bootstrap();
