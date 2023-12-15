@@ -10,8 +10,8 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
     // @IsString()
     // description?: string;
   
-    @IsArray()
-    @IsOptional()
-    categoriesIds?: number[]
+    // @IsArray()
+    // @IsOptional()
+    // categoriesIds?: number[]
   
 }

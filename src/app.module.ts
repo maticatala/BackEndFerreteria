@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
-import { PriceHistoryModule } from './price_history/price_history.module';
 import { DirectionsModule } from './directions/directions.module';
 import { PedidosModule } from './pedidos/pedidos.module';
 
@@ -24,7 +23,6 @@ import { PedidosModule } from './pedidos/pedidos.module';
     AuthModule,
     CategoriesModule,
     ProductsModule,
-    PriceHistoryModule,
     DirectionsModule,
     PedidosModule
   ],

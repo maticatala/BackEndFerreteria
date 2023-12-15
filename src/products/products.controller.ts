@@ -1,25 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Res, Query, ParseFilePipe } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname, join } from 'path';
 import { Response } from 'express';
-import { FileParams } from './interfaces/file-params.interface';
 import * as path from "path";
 
   const storage = diskStorage({
   destination: './uploads',
   filename: (req, file, cb) => {
-    // const name = file.originalname.split('.')[0];
-    // const extension = extname(file.originalname);
-    // const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
-    // const finalFileName = `${name}-${randomName}${extension}`;
-    // const filePath = join('./uploads', finalFileName); // Ruta completa al archivo
-    // cb(null, finalFileName); // Guarda el archivo con el nombre final
-    cb(null, file.originalname + '_' + Date.now());
+    cb(null,Date.now() + '_' +  file.originalname);
   },
 });
 
@@ -39,8 +31,9 @@ export class ProductsController {
   }
 
   @Get("/getFile")
-  getFile(@Res() res: Response, @Body() file: FileParams) {
-    res.sendFile(path.join(__dirname, "../../uploads/" + file.fileName));
+  getFile(@Res() res: Response, @Query('fileName') fileName: string) {
+    // res.sendFile(path.join(__dirname, "../../uploads/" + file.fileName));
+    res.sendFile(path.join(__dirname, "../../uploads/" + fileName));
   }
   
   @Get(':id')
@@ -50,11 +43,11 @@ export class ProductsController {
 
   @Patch(':id')
   @UseInterceptors(FileInterceptor('file', { storage }))
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @UploadedFile() file) {
+  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @UploadedFile(new ParseFilePipe({ fileIsRequired: false })) file?) {
     return this.productsService.update(+id, updateProductDto, file);
   }
 
-  @Delete(':id')
+  @Patch('delete/:id')
   delete(@Param('id') id: string) {
     return this.productsService.delete(+id);
   }

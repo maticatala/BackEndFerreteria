@@ -1,15 +1,20 @@
-import { IsString, ArrayMinSize, IsArray} from "class-validator";
-import { Category } from "src/categories/category.entity";
+import { IsString, ArrayMinSize, IsArray, IsOptional, IsDecimal, IsNumber, IsPositive} from "class-validator";
 
 export class CreateProductDto {
   @IsString()
-  name: string;
+  readonly name: string;
   
   @IsString()
-  description: string;
+  readonly description: string;
 
   @IsArray()
   @ArrayMinSize(1)
-  categoriesIds: number[]
+  readonly categoriesIds: number[];
 
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
+  readonly price: number;
+
+  @IsOptional()
+  readonly isDeleted: boolean;
 }
