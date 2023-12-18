@@ -91,24 +91,6 @@ export class AuthService {
     return userWithoutPassword;
   }
   
-  // async pagination(param: PaginationQueryDto) {
-  //   const { pageSize = 3, page } = param;
-
-  //   // Obtener los usuarios de la base de datos
-  //   const paginatedData = await this.paginationService.paginate(this.userRepository, page, pageSize);
-    
-  //   // Eliminar el campo de contraseña de cada usuario en los resultados
-  //   const resultsWithoutPassword = paginatedData.results.map(user => {
-  //     const { password, ...userWithoutPassword } = user;
-  //     return userWithoutPassword;
-  //   });
-
-  //   // Reemplazar los resultados con los resultados sin contraseña
-  //   paginatedData.results = resultsWithoutPassword;
-
-  //   return paginatedData;
-  // }
-  
   async findUserById(id: number): Promise<User> {
     
     const user = await this.userRepository.findOne({ where: { id } });
