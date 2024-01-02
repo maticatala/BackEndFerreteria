@@ -1,20 +1,25 @@
-import { IsString, ArrayMinSize, IsArray, IsOptional, IsDecimal, IsNumber, IsPositive} from "class-validator";
+import { IsString, IsArray, IsOptional, IsNumber, IsPositive, IsNotEmpty} from "class-validator";
 
 export class CreateProductDto {
-  @IsString()
+
+  @IsNotEmpty({message: 'name can not be blank.'})
+  @IsString({message: 'name should be string'})
   readonly name: string;
   
-  @IsString()
+  @IsNotEmpty({message: 'name can not be empty.'})
+  @IsString({message: 'description should be string'})
   readonly description: string;
 
-  @IsArray()
-  @ArrayMinSize(1)
-  readonly categoriesIds: number[];
-
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @IsPositive()
+  @IsNotEmpty({message: 'price can not be empty.'})
+  @IsNumber({ maxDecimalPlaces: 2 }, {message: 'price should be number & max decimal precission 2.'})
+  @IsPositive({message: 'price should be positive number.'})
   readonly price: number;
 
   @IsOptional()
   readonly isDeleted: boolean;
+
+  @IsNotEmpty({message: "categories id's can not be empty."})
+  @IsArray({message: "categories id's should be in array format."})
+  readonly categoriesIds: number[];
+
 }

@@ -10,9 +10,6 @@ import { User } from './entities/user.entity';
 import { JwtPayload, LoginResponse, Roles } from './interfaces';;
 import { LoginDto, CreateUserDto, RegisterDto, UpdateUserDto } from './dto';
 
-
-
-
 @Injectable()
 export class AuthService {
 
@@ -23,20 +20,16 @@ export class AuthService {
   ) { }
   
   //Mecanismo para crear un usuario
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
-  
+  async createUser(createUserDto: CreateUserDto | RegisterDto): Promise<User> {
     try {
-      const { password, ...userData } = createUserDto;
-
       //ENCRIPTAR CONTRASEÑA
-      const newUser = this.userRepository.create({
-        password: bcryptjs.hashSync(password, 10),
-        ...userData
-      });
+      createUserDto.password = await bcryptjs.hashSync(createUserDto.password, 10);
+      
+      let user = await this.userRepository.create(createUserDto);
 
-      await this.userRepository.save(newUser);
+      user = await this.userRepository.save(user);
 
-      const { password: _, ...user } = newUser;
+      delete user.password;
 
       return user;
       
@@ -44,16 +37,14 @@ export class AuthService {
       if (error.errno === 1062) {
         throw new BadRequestException(`${createUserDto.email} alredy exists!`);
       }
+
       throw new InternalServerErrorException('Something terrible happen!');
     }
   }
 
   async register(registerDto: RegisterDto): Promise<LoginResponse> {
-    
-    const newUser: CreateUserDto = registerDto;
-    newUser.rol = Roles.user;
 
-    const user = await this.createUser(newUser);
+    const user = await this.createUser(registerDto);
 
     return {
       user,
@@ -64,8 +55,8 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<LoginResponse> {
     const { email, password } = loginDto;
 
-    const user = await this.userRepository.findOne({ where: { email } });
-    
+    const user = await this.userRepository.createQueryBuilder('users').addSelect('users.password').where('users.email=:email',{email:email}).getOne();
+
     if (!user) {
       throw new UnauthorizedException('Not valid credentials - email');
     }
@@ -73,59 +64,64 @@ export class AuthService {
       throw new UnauthorizedException('Not valid credentials - password');
     }
 
-    const { password: _, ...rest } = user;
+    delete user.password;
     
     return {
-      user: rest,
+      user,
       token: this.getJwtToken({id: user.id})
     };
   }
 
   async findAll() {
-    const results = await this.userRepository.find();
-    const userWithoutPassword = results.map(user => {
-      const { password, ...userWithoutPassword } = user
-      return userWithoutPassword;
-    })
-
-    return userWithoutPassword;
+    return await this.userRepository.find();
   }
   
   async findUserById(id: number): Promise<User> {
     
     const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) throw new BadRequestException(`user id ${id} does not exist`);
-    const { password, ...rest } = user;
-    return rest; 
+
+    if (!user) throw new NotFoundException(`user id ${id} does not exist`);
     
+    return user;
   }
 
-  async findUserByEmail(email: string): Promise<Boolean> {
+  async findUserByEmail(email: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { email } }); 
     
-    const user = await this.userRepository.findOne({ where: { email } });
+    if (user)
+      throw new BadRequestException(`the email ${email} is aleady in use`);
 
-    if (user) return true;
-
-    return false; 
-    
+    return user;
   }
 
   async update(id:number, updateUserDto: UpdateUserDto): Promise<User> {
-    
-    const user = await this.userRepository.findOne({ where: { id } });
+    try {
+      const user = await this.userRepository.findOne({ where: { id } });
 
-    if (!user) throw new BadRequestException(`user ${id} does not exists!`);
+      if (!user) throw new NotFoundException(`user ${id} does not exists!`);
 
-    const editedUser = this.userRepository.merge(user, updateUserDto);
+      const { password } = updateUserDto
 
-    return this.userRepository.save(editedUser);
+      if (password) updateUserDto.password = await bcryptjs.hashSync(password, 10);
 
+      let editedUser = this.userRepository.merge(user, updateUserDto);
+      editedUser = await this.userRepository.save(editedUser);
+
+      delete editedUser.password;
+
+      return editedUser;
+    } catch (error) {
+      if (error.errno === 1062) {
+        throw new BadRequestException(`the email ${updateUserDto.email} is aleady in use`);
+      }
+
+      throw new InternalServerErrorException('Something terrible happen!');
+    }
   }
 
   async delete(id: number) {
     return await this.userRepository.delete(id);
   }
-
   
   getJwtToken( payload: JwtPayload) {
     const token = this.jwtService.sign(payload);

@@ -1,19 +1,25 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Category } from './category.entity';
-import { Repository } from 'typeorm';
+import { Category } from './entities/category.entity';
+import { In, Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class CategoriesService {
 
-  constructor(@InjectRepository(Category) private categoryRepository: Repository<Category>){}
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>
+  ) {}
 
-  async createCategory(category: CreateCategoryDto){
+  async createCategory(category: CreateCategoryDto, currentUser: User): Promise<Category>{
     try {
 
       const newCategory = this.categoryRepository.create(category);
+
+      newCategory.addedBy = currentUser;
     
       return await this.categoryRepository.save(newCategory);
 
@@ -23,50 +29,84 @@ export class CategoriesService {
     }
   }
   
-  async getCategories(){
-     return await this.categoryRepository.find()
-  }
-
-  async getCategoryById(id: number) {
-    return  await this.searchCategory(id);
-
+  async findAll(): Promise<Category[]>{
+    return await this.categoryRepository.find(
+      {
+       relations: {
+          addedBy: true
+        },
+        select: {
+          addedBy: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          }
+        }
+      })
   }
   
-  //TODO: delete y update
+  async findOne(id: number): Promise<Category> {
+    const category = await this.categoryRepository.findOne(
+      {
+        where: {
+          id: id
+        },
+        relations: {
+          addedBy: true
+        },
+        select: {
+          addedBy: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          }
+        }
+      }
+      );
 
-  async delete(id: number) {    // return `This action removes a #${id} category`;
-    const categoryFound = await this.searchCategory(id);
-
-    return this.categoryRepository.remove(categoryFound);
+      if (!category) throw new NotFoundException(`Category id #${id} does not exists`);
+      
+      return category;
   }
+  
+    async getCategoriesByIds(categoryIds: number[]): Promise<Category[]> {
+  
+      const categoryFound = await this.categoryRepository.find({
+        where: { id: In(categoryIds) }
+      });
+  
+      if (categoryFound.length !== categoryIds.length)
+        throw new NotFoundException('Not all categories found');
+  
+      return categoryFound;
+    }
 
-
-  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
+    async delete(id: number): Promise<Category> {    // return `This action removes a #${id} category`;
     try {
-      const categoryFound = await this.searchCategory(id);
+      const categoryFound = await this.findOne(id);
 
-      this.categoryRepository.merge(categoryFound, updateCategoryDto);
-
-      return this.categoryRepository.save(categoryFound);
+      return this.categoryRepository.remove(categoryFound);
     } catch (error) {
-      if (!error.errno) throw new BadRequestException(error.message);
+      if (error.status === 404) return error.response;
 
       throw new InternalServerErrorException('Something terrible happen!');
     }
   }
 
-  
-  //PRIVATE METHODS
+  async update(id: number, fields: Partial<UpdateCategoryDto>): Promise<Category> {
+    try {
+      const categoryFound = await this.findOne(id);
 
-  private async searchCategory(categoryId: number): Promise<Category> {
-    const categoryFound = await this.categoryRepository.findOne({
-      where: { id: categoryId }
-    });
+      this.categoryRepository.merge(categoryFound, fields);
 
-    if (!categoryFound) throw new NotFoundException(`Category ${categoryId} does not exists!`);
+      return this.categoryRepository.save(categoryFound);
+    } catch (error) {
+      if (error.status === 404) return error.response;
 
-    return categoryFound;
+      throw new InternalServerErrorException('Something terrible happen!');
+    }
   }
-
 
 }

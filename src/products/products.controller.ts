@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Res, Query, ParseFilePipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Res, Query, ParseFilePipe, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -7,6 +7,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { Response } from 'express';
 import * as path from "path";
+import { CurrentUser } from 'src/utility/decorators/current-user.decorator';
+import { User } from 'src/auth/entities/user.entity';
+import { AuthenticationGuard } from 'src/utility/guards/authentication.guard';
+import { AuthorizeGuard } from 'src/utility/guards/authorization.guard';
+import { Roles } from 'src/auth/interfaces';
+import { Product } from './entities/product.entity';
 
   const storage = diskStorage({
   destination: './uploads',
@@ -19,10 +25,11 @@ import * as path from "path";
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Post()
   @UseInterceptors(FileInterceptor('file', { storage }))
-  create(@Body() createProductDto: CreateProductDto, @UploadedFile() file) {
-    return this.productsService.create(createProductDto, file);
+  create(@Body() createProductDto: CreateProductDto, @UploadedFile() file, @CurrentUser() currentUser: User): Promise<Product> {
+    return this.productsService.create(createProductDto, file, currentUser);
   } 
 
   @Get()
@@ -32,7 +39,6 @@ export class ProductsController {
 
   @Get("/getFile")
   getFile(@Res() res: Response, @Query('fileName') fileName: string) {
-    // res.sendFile(path.join(__dirname, "../../uploads/" + file.fileName));
     res.sendFile(path.join(__dirname, "../../uploads/" + fileName));
   }
   

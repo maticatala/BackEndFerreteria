@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from '../interfaces';
 import { AuthService } from '../auth.service';
@@ -25,12 +25,7 @@ export class AuthGuard implements CanActivate {
         token, { secret: process.env.JWT_SEED }
       );
 
-      //Si el usuario no existe se arroja un error
       const user = await this.authService.findUserById(payload.id);
-
-      if (!user) throw new Error('User does not exists');
-
-      // if (user.rol !== 'admin') throw new Error('user without permissions');
     
       request['user'] = user;
     } catch (error) {
