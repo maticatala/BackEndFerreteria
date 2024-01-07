@@ -3,11 +3,9 @@ import { Body, Controller, Get, Param, Post, UseGuards, Request, Query, Patch, D
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, CreateUserDto, UpdateUserDto } from './dto';
 import { User } from './entities/user.entity';
-import { AuthGuard } from './guards/auth.guard';
 import { LoginResponse, Roles } from './interfaces';
 import { CurrentUser } from 'src/utility/decorators/current-user.decorator';
 import { AuthenticationGuard } from 'src/utility/guards/authentication.guard';
-import { AuthorizeRoles } from 'src/utility/decorators/authorize-roles.decorator';
 import { AuthorizeGuard } from 'src/utility/guards/authorization.guard';
 
 

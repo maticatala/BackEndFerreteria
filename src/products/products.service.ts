@@ -4,8 +4,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { In, Repository } from 'typeorm';
-import { Category } from 'src/categories/entities/category.entity';
+import { Repository } from 'typeorm';
 import { ProductResponse } from './interfaces/product-response.interface';
 import { User } from 'src/auth/entities/user.entity';
 import { CategoriesService } from 'src/categories/categories.service';
@@ -20,16 +19,21 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto, file: any, currentUser: User): Promise<Product> {
     try {
       const { categoriesIds } = createProductDto;
-      
+
       const createdCategories = await await this.categoryService.getCategoriesByIds(categoriesIds);
       
       let newProduct = this.productRepository.create(createProductDto);
 
+      // console.log(newProduct);
+
       newProduct.addedBy = currentUser;
       newProduct.categories = createdCategories;
       newProduct.imagen = file.filename;
-    
+      newProduct.isDeleted = false;
+      
       newProduct = await this.productRepository.save(newProduct);
+      
+      console.log(newProduct);
 
       delete newProduct.isDeleted;
       
@@ -37,6 +41,8 @@ export class ProductsService {
     
     } catch (error) {
       if (error.status === 404) return error.response;
+
+      console.log(error)
       
       throw new InternalServerErrorException('Something terrible happen!');
     }

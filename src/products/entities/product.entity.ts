@@ -4,7 +4,7 @@ import { OrdersProducts } from "src/orders/entities/orders-product.entity";
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 
-@Entity({name: 'products'}) //Lo rojito va en MINUSCULA
+@Entity({name: 'products'})
 export class Product {
   @PrimaryGeneratedColumn()
   id: number;
@@ -34,6 +34,7 @@ export class Product {
   addedBy: User;
 
   @ManyToMany((type) => Category, (category) => category.products)
+  @JoinTable()
   categories: Category[];
 
   @OneToMany((type) => OrdersProducts, (ordersProducts) => ordersProducts.product)

@@ -41,6 +41,5 @@ export class User {
 
   @OneToMany((type) => Order, (order) => order.updatedBy)
   ordersUpdateBy: Order;
-
 }
 

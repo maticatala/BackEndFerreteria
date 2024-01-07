@@ -29,8 +29,8 @@ export class Order {
   @JoinColumn()
   shippingAddress: Shipping;
 
-  @OneToMany((type) => OrdersProducts, (orderProduct) => orderProduct.order, {cascade: true})
-  public products: OrdersProducts[];
+  @OneToMany((type) => OrdersProducts, (orderProduct) => orderProduct.order, { cascade: true })
+  products: OrdersProducts[];
 
   @ManyToOne((type) => User, user => user.orders)
   user: User;
