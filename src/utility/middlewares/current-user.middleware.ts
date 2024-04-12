@@ -1,4 +1,4 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtPayload } from 'src/auth/interfaces/jwt-payload';
@@ -18,9 +18,17 @@ export class CurrentUserMiddleware implements NestMiddleware {
       return;
     } 
 
-    const { id } = <JwtPayload>verify(token, process.env.JWT_SEED);
-    const user = await this.authService.findUserById(+id);
-    req['user'] = user;
+    //Esté middleware se ejecuta antes de cada peticion http y nos permite verificar el token del usuario
+    //Validamos el token
+    try {
+      const { id } = <JwtPayload>verify(token, process.env.JWT_SEED);
+      const user = await this.authService.findUserById(+id);
+
+      //Asigna una propiedad "user" a la request y le guarda el usuario
+      req['user'] = user;
+    } catch (error) {
+      throw new UnauthorizedException();
+    }
     next();
   }
 

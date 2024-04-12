@@ -25,6 +25,10 @@ export class CategoriesService {
 
     } catch (error) {
 
+      if (error.errno === 1062) {
+        throw new BadRequestException(`the name ${category.categoryName} is aleady in use`);
+      }
+
       throw new InternalServerErrorException('Something terrible happen!');
     }
   }
@@ -70,6 +74,30 @@ export class CategoriesService {
       
       return category;
   }
+
+    
+  async findOneByName(name: string): Promise<Category> {
+    const category = await this.categoryRepository.findOne(
+      {
+        where: {
+          categoryName: name
+        },
+        relations: {
+          addedBy: true
+        },
+        select: {
+          addedBy: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          }
+        }
+      }
+      );
+      
+      return category;
+  }
   
     async getCategoriesByIds(categoryIds: number[]): Promise<Category[]> {
   
@@ -96,13 +124,22 @@ export class CategoriesService {
   }
 
   async update(id: number, fields: Partial<UpdateCategoryDto>): Promise<Category> {
-    try {
-      const categoryFound = await this.findOne(id);
+    try {    
 
+      const category = await this.findOneByName(fields.categoryName);
+
+      if (category) throw new BadRequestException(`the name ${category.categoryName} is aleady in use`) 
+
+      const categoryFound = await this.findOne(id);
+      
       this.categoryRepository.merge(categoryFound, fields);
 
       return this.categoryRepository.save(categoryFound);
+
     } catch (error) {
+
+      if (error instanceof BadRequestException) throw error
+
       if (error.status === 404) return error.response;
 
       throw new InternalServerErrorException('Something terrible happen!');

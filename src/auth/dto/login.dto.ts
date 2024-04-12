@@ -1,5 +1,4 @@
-import { Exclude } from "class-transformer";
-import { IsEmail, IsNotEmpty, MinLength } from "class-validator";
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, MinLength } from "class-validator";
 
 export class LoginDto {
 
@@ -10,5 +9,9 @@ export class LoginDto {
   @IsNotEmpty({message: 'Password can not be empty.'})
   @MinLength(6, {message: 'Password minimun character should be 6.'})
   password: string;
+
+  // @IsBoolean()
+  @IsNotEmpty({message: 'keepLogged can not be empty.'})
+  keepLogged: boolean;
 
 }

@@ -16,7 +16,7 @@ import { Order } from 'src/orders/entities/order.entity';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SEED,
-      signOptions: { expiresIn: '6h' },
+      // signOptions: { expiresIn: '10s' },
     }),
   ],
   controllers: [AuthController],

@@ -12,6 +12,8 @@ import { LoginDto, CreateUserDto, RegisterDto, UpdateUserDto } from './dto';
 
 @Injectable()
 export class AuthService {
+  
+  private keepLogged: boolean = false;
 
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
@@ -53,7 +55,9 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto): Promise<LoginResponse> {
-    const { email, password } = loginDto;
+    const { email, password, keepLogged } = loginDto;
+
+    if (keepLogged) this.keepLogged = true;
 
     const user = await this.userRepository.createQueryBuilder('users').addSelect('users.password').where('users.email=:email',{email:email}).getOne();
 
@@ -124,7 +128,12 @@ export class AuthService {
   }
   
   getJwtToken( payload: JwtPayload) {
-    const token = this.jwtService.sign(payload);
-    return token;
+
+    if (this.keepLogged) {
+      return this.jwtService.sign(payload); // Token sin tiempo de expiración
+    } else {
+      return this.jwtService.sign(payload, { expiresIn: '1hr' });
+    }
+
   }
 }
