@@ -11,7 +11,8 @@ export class LoginDto {
   password: string;
 
   // @IsBoolean()
-  @IsNotEmpty({message: 'keepLogged can not be empty.'})
+  // @IsNotEmpty({message: 'keepLogged can not be empty.'})
+  @IsOptional()
   keepLogged: boolean;
 
 }

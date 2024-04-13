@@ -25,21 +25,15 @@ import { Product } from './entities/product.entity';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
-  @Post()
-  @UseInterceptors(FileInterceptor('file', { storage }))
-  create(@Body() createProductDto: CreateProductDto, @UploadedFile() file, @CurrentUser() currentUser: User): Promise<Product> {
-    return this.productsService.create(createProductDto, file, currentUser);
-  } 
-
+  
   @Get()
   findAll() {
     return this.productsService.findAll();
   }
-
-  @Get("/getFile")
+  
+  @Get("getFile")
   getFile(@Res() res: Response, @Query('fileName') fileName: string) {
-    res.sendFile(path.join(__dirname, "../../uploads/" + fileName));
+    res.sendFile(path.join(__dirname, "../../../uploads/" + fileName));
   }
   
   @Get(':id')
@@ -47,12 +41,21 @@ export class ProductsController {
     return this.productsService.findOne(+id);
   }
 
+  @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
+  @Post()
+  @UseInterceptors(FileInterceptor('file', { storage }))
+  create(@Body() createProductDto: CreateProductDto, @UploadedFile() file, @CurrentUser() currentUser: User): Promise<Product> {
+    return this.productsService.create(createProductDto, file, currentUser);
+  } 
+  
+  @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Patch(':id')
   @UseInterceptors(FileInterceptor('file', { storage }))
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @UploadedFile(new ParseFilePipe({ fileIsRequired: false })) file?) {
     return this.productsService.update(+id, updateProductDto, file);
   }
 
+  @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Patch('delete/:id')
   delete(@Param('id') id: string) {
     return this.productsService.delete(+id);
