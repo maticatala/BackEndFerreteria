@@ -18,8 +18,9 @@ export class CreateProductDto {
   @IsOptional()
   readonly isDeleted: boolean;
 
-  @IsNotEmpty({message: "categories id's can not be empty."})
+  // @IsNotEmpty({message: "categories id's can not be empty."})
+  @IsOptional()
   @IsArray({message: "categories id's should be in array format."})
-  readonly categoriesIds: number[];
+  readonly categoriesIds: number[] = [];
 
 }

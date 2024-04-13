@@ -20,11 +20,9 @@ export class ProductsService {
     try {
       const { categoriesIds } = createProductDto;
 
-      const createdCategories = await await this.categoryService.getCategoriesByIds(categoriesIds);
-      
-      let newProduct = this.productRepository.create(createProductDto);
+      const createdCategories = await this.categoryService.getCategoriesByIds(categoriesIds);
 
-      // console.log(newProduct);
+      let newProduct = this.productRepository.create(createProductDto);
 
       newProduct.addedBy = currentUser;
       newProduct.categories = createdCategories;
@@ -32,8 +30,6 @@ export class ProductsService {
       newProduct.isDeleted = false;
       
       newProduct = await this.productRepository.save(newProduct);
-      
-      console.log(newProduct);
 
       delete newProduct.isDeleted;
       
