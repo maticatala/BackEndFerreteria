@@ -6,6 +6,7 @@ import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { dataSourceOptions } from 'db/data-source';
 import { CurrentUserMiddleware } from './utility/middlewares/current-user.middleware';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [

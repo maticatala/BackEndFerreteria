@@ -28,8 +28,6 @@ async function bootstrap() {
   /*
     *Inicia el servidor de tu aplicación NestJS en el puerto 3000 y bloquea la ejecución del programa hasta que el servidor esté en funcionamiento. Una vez que el servidor está escuchando en el puerto 3000, el programa continuará ejecutando cualquier otra lógica que puedas tener después de esta línea.
   */
-  
-  // const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.useStaticAssets(path.join(__dirname, "../uploads"))
   
