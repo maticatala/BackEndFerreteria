@@ -1,13 +1,14 @@
-import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException, Query } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { ProductResponse } from './interfaces/product-response.interface';
 import { User } from 'src/auth/entities/user.entity';
 import { CategoriesService } from 'src/categories/categories.service';
+import { QueryProductDto } from './dto/find-product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -28,25 +29,28 @@ export class ProductsService {
       newProduct.categories = createdCategories;
       newProduct.imagen = file.filename;
       newProduct.isDeleted = false;
-      
+
       newProduct = await this.productRepository.save(newProduct);
 
       delete newProduct.isDeleted;
-      
+
       return newProduct;
-    
+
     } catch (error) {
       if (error.status === 404) return error.response;
 
       console.log(error)
-      
+
       throw new InternalServerErrorException('Something terrible happen!');
     }
   }
 
-  async findAll(): Promise<ProductResponse[]> {    // return `This action returns all products`;
+  async findAll(): Promise<ProductResponse[]> { // return `This action returns all products`;   
     const products = await this.productRepository.find({
-      where: { isDeleted: false },
+      // take: query.limit,
+      where: { 
+        isDeleted: false, 
+      },
       relations: {
         categories: true,
         addedBy: true
@@ -61,8 +65,11 @@ export class ProductsService {
             firstName: true,
             lastName: true,
             email: true
-        }
-      }
+        },
+      },
+      // order:{
+      //   [query.order] : 'ASC',
+      // },
     });
 
     return products;
@@ -97,12 +104,12 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: number, updateProductDto: Partial<UpdateProductDto>, file: any): Promise<ProductResponse> { 
+  async update(id: number, updateProductDto: Partial<UpdateProductDto>, file: any): Promise<ProductResponse> {
     try{
       const productFound = await this.findOne(id);
 
       const { categoriesIds } = updateProductDto
-  
+
       if (categoriesIds) {
         productFound.categories = await this.categoryService.getCategoriesByIds(categoriesIds);
       }
@@ -110,9 +117,9 @@ export class ProductsService {
       if (file) productFound.imagen = file.filename;
 
       this.productRepository.merge(productFound, updateProductDto);
-      
+
       return await this.productRepository.save(productFound);
-      
+
     } catch (error) {
       if (error.status === 404) return error.response;
 
@@ -120,18 +127,50 @@ export class ProductsService {
     }
   }
 
-  async delete(id: number): Promise<ProductResponse> {  
+  async delete(id: number): Promise<ProductResponse> {
     try {
       let productFound = await this.findOne(id);
-  
+
       productFound.isDeleted = true;
-  
+
       return await this.productRepository.save(productFound);
     } catch (error) {
       if (error.status === 404) return error.response;
 
       throw new InternalServerErrorException('Something terrible happen!');
     }
+  }
+
+  async searchProductByName(@Query() query : QueryProductDto) : Promise<ProductResponse[]>{
+    const products = await this.productRepository.find({
+      take: query.limit,
+      where: { 
+        isDeleted: false,
+        name : Like(`%${query.name}%`), 
+      },
+      relations: {
+        categories: true,
+        addedBy: true
+      },
+      select: {
+        categories: {
+          id: true,
+          categoryName: true
+        },
+        addedBy: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+        },
+      },
+      order: {
+        [query.order] : 'ASC',
+      }
+    });
+
+    return products;
+
   }
 
 }//fin

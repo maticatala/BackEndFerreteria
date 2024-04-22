@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Res, Query, ParseFilePipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Res, Query, ParseFilePipe, UseGuards, ValidationPipe } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -13,6 +13,8 @@ import { AuthenticationGuard } from 'src/utility/guards/authentication.guard';
 import { AuthorizeGuard } from 'src/utility/guards/authorization.guard';
 import { Roles } from 'src/auth/interfaces';
 import { Product } from './entities/product.entity';
+import { ProductResponse } from './interfaces/product-response.interface';
+import { QueryProductDto } from './dto/find-product.dto';
 
   const storage = diskStorage({
   destination: './uploads',
@@ -25,21 +27,45 @@ import { Product } from './entities/product.entity';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  // @Get()
+  // findByName(@Query('name') name: string) : Promise<ProductResponse[]> {
+  //   return this.productsService.searchProductByName(name);
+  // }
+  
+  // @Get()
+  // async getProductsByName(@Query query) : Promise<ProductResponse[]>{
+  // }
+
   
   @Get()
   findAll() {
     return this.productsService.findAll();
   }
   
+  @Get('/search')
+  findProductByName(@Query(new ValidationPipe()) query : QueryProductDto)  {
+
+    const mergedQuery = {
+      limit : 2,
+      order : 'name',
+      name : '',
+      ...query
+    }
+
+    return this.productsService.searchProductByName(mergedQuery);
+  }
+
   @Get("getFile")
   getFile(@Res() res: Response, @Query('fileName') fileName: string) {
     res.sendFile(path.join(__dirname, "../../../uploads/" + fileName));
   }
   
-  @Get(':id')
+
+  @Get('/:id')
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(+id);
   }
+  
 
   @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Post()
