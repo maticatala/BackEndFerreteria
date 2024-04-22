@@ -7,12 +7,17 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrdersProducts } from './entities/orders-product.entity';
 import { Shipping } from './entities/shipping.entity';
+import { Product } from 'src/products/entities/product.entity';
+import { ProductsService } from 'src/products/products.service';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { OrderStatus } from './enums/order-status.enum';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order) private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrdersProducts) private readonly opRepository: Repository<OrdersProducts>,
+    private readonly productService: ProductsService
   ) {}
 
   async create(createOrderDto: CreateOrderDto, currentUser: User) {
@@ -26,21 +31,23 @@ export class OrdersService {
 
       const order = await this.orderRepository.save(orderEntity);
 
+      //Arreglo de lineas de pedido
       let opEntity: {
-        orderId: number,
-        productId: number,
+        order: Order,
+        product: Product,
         product_quantity: number,
         product_unit_price: number
       }[] = []
       
+      //Llena el arreglo utilizando el DTO de orderedProducts
       for (let i = 0; i < createOrderDto.orderedProducts.length; i++){
-        const orderId = order.id;
-        const productId = createOrderDto.orderedProducts[i].id;
-        const product_quantity = createOrderDto.orderedProducts[i].product_queantity;
-        const product_unit_price = createOrderDto.orderedProducts[i].product_unit_price;
-        opEntity.push({ orderId, productId, product_quantity, product_unit_price });
+        const product = await this.productService.findOne(createOrderDto.orderedProducts[i].id)
+        const product_quantity = createOrderDto.orderedProducts[i].product_quantity;
+        const product_unit_price = product.price;
+        opEntity.push({ order, product, product_quantity, product_unit_price });
       }
 
+      //Crea la linea de pedido
       const op = await this.opRepository
         .createQueryBuilder()
         .insert()
@@ -69,13 +76,75 @@ export class OrdersService {
       }
     })
   }
-  findAll() {
-    throw new Error('Method not implemented.');
+  
+  async findAll() {
+    return await this.orderRepository.find({
+      relations: {
+        shippingAddress: true,
+        user: true,
+        products: {
+          product: true
+        }
+      }
+    })
   }
-  delete(arg0: number) {
-    throw new Error('Method not implemented.');
+  
+  async update(id: number, updateOrderStatusDto: UpdateOrderStatusDto, currentUser: User) {
+    let order = await this.findOne(id);
+    if (!order) throw new NotFoundException('Pedido no encontrado');
+
+    //El pedido fue entregado o cancelado.
+    if (order.status === OrderStatus.DELIVERED || order.status === OrderStatus.CANCELLED){
+      throw new BadRequestException(`El pedido ya fue ${order.status}`)
+    }
+
+    //Pedido en proceso y actualiza el estado a enviado
+    if (order.status === OrderStatus.PROCESSING && updateOrderStatusDto.status !== OrderStatus.SHIPPED){
+      throw new BadRequestException(`Pedido entregado antes de ser enviado !!!`)
+    }
+
+    //Pedido enviado y actualiza el estado a enviado
+    if (order.status === OrderStatus.SHIPPED && updateOrderStatusDto.status === OrderStatus.SHIPPED){
+      return order;
+    }
+
+    //Si actualiza el estado a enviado guarda la fecha
+    if (updateOrderStatusDto.status === OrderStatus.SHIPPED) {
+      order.shippedAt = new Date();
+    }
+
+    //Si actualiza el estado a entregado guarda la fecha
+    if(updateOrderStatusDto.status === OrderStatus.DELIVERED) {
+      order.deliveredAt = new Date();
+    }
+
+    order.status = updateOrderStatusDto.status;
+    order.updatedBy = currentUser;
+    order = await this.orderRepository.save(order);
+
+    return order;
   }
-  update(arg0: number, updatePedidoDto: UpdatePedidoDto) {
+
+  async cancelled(id: number, currentUser: User){
+    let order = await this.findOne(id);
+    if (!order) throw new NotFoundException('Pedido no encontrado');
+
+    if (order.status === OrderStatus.DELIVERED){
+      throw new BadRequestException('El pedido ya fue entregado')
+    }
+
+    if (order.status === OrderStatus.CANCELLED) {
+      return order;
+    }
+    
+    order.status = OrderStatus.CANCELLED;
+    order.updatedBy = currentUser;
+    order = await this.orderRepository.save(order);
+
+    return order;
+  }
+
+  delete(id: number) {
     throw new Error('Method not implemented.');
   }
 

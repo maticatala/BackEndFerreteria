@@ -5,6 +5,7 @@ export class CreateShippingDto {
   @IsString({message: 'Phone format should be string'})
   phone: string;
 
+  //Es opcional ya que vamos a tener asociado al pedido el cliente.
   @IsOptional()
   @IsString({message: 'Name format should be string'})
   name: string;

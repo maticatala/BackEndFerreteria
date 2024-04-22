@@ -36,10 +36,10 @@ export class User {
   @OneToMany((type) => Product, product => product.addedBy)
   products: Category[];
 
+  @OneToMany((type) => Order, (order) => order.updatedBy)
+  ordersUpdateBy: Order[];
+
   @OneToMany((type) => Order, (orders) => orders.user)
   orders: Order[];
-
-  @OneToMany((type) => Order, (order) => order.updatedBy)
-  ordersUpdateBy: Order;
 }
 

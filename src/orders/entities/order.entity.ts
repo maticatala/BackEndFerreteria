@@ -10,25 +10,30 @@ export class Order {
   @PrimaryGeneratedColumn()
   public id:number;
 
-  @CreateDateColumn()
-  public orderAt: Date;
-
   @Column({type: "enum", enum:OrderStatus, default: OrderStatus.PROCESSING})
   public status: string
+
+  //Pedido el ...
+  @CreateDateColumn()
+  public orderAt: Date;
   
+  //Enviado el ...
   @Column({nullable: true})
   public shippedAt: Date;
 
+  //Entregado el ...
   @Column({nullable: true})
   public deliveredAt: Date;
 
   @ManyToOne((type) => User, (user) => user.ordersUpdateBy)
   updatedBy: User;
 
+  //cascade true ya que al eliminar un pedido tambien eliminaremos su direccion de entrega
   @OneToOne((type) => Shipping, (shipping) => shipping.order, { cascade: true })
   @JoinColumn()
   shippingAddress: Shipping;
 
+  //Un pedido debe tener una o mas lineas de pedido
   @OneToMany((type) => OrdersProducts, (orderProduct) => orderProduct.order, { cascade: true })
   products: OrdersProducts[];
 

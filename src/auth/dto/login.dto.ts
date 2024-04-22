@@ -10,9 +10,6 @@ export class LoginDto {
   @MinLength(6, {message: 'Password minimun character should be 6.'})
   password: string;
 
-  // @IsBoolean()
-  // @IsNotEmpty({message: 'keepLogged can not be empty.'})
   @IsOptional()
   keepLogged: boolean;
-
 }

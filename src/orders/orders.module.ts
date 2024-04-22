@@ -6,12 +6,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrdersProducts } from './entities/orders-product.entity';
 import { Shipping } from './entities/shipping.entity';
 import { Order } from './entities/order.entity';
+import { ProductsModule } from 'src/products/products.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forFeature([Order, OrdersProducts, Shipping]),
-
+    ProductsModule
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

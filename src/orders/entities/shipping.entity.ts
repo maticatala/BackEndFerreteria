@@ -27,7 +27,7 @@ export class Shipping {
   @Column()
   country: string;
 
+  //Un pedido tiene una unica dirección de entrega y una dirección de entrega pertenece a un único pedido
   @OneToOne((type) => Order, order => order.shippingAddress)
   order: Order;
-
 }

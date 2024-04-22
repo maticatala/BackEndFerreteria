@@ -37,6 +37,7 @@ export class Product {
   @JoinTable()
   categories: Category[];
 
+  //Un producto puede estar en muchas lineas de pedido
   @OneToMany((type) => OrdersProducts, (ordersProducts) => ordersProducts.product)
   orders: OrdersProducts[];
 }
