@@ -4,11 +4,12 @@ import { UpdateProductDto } from './dto/update-product.dto';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Like, Repository } from 'typeorm';
+import { ArrayContains, Like, Repository } from 'typeorm';
 import { ProductResponse } from './interfaces/product-response.interface';
 import { User } from 'src/auth/entities/user.entity';
 import { CategoriesService } from 'src/categories/categories.service';
 import { QueryProductDto } from './dto/find-product.dto';
+import dataSource from 'db/data-source';
 
 @Injectable()
 export class ProductsService {
@@ -141,12 +142,15 @@ export class ProductsService {
     }
   }
 
-  async searchProductByName(@Query() query : QueryProductDto) : Promise<ProductResponse[]>{
+  async searchProductByQueryParams(@Query() query : QueryProductDto) : Promise<ProductResponse[]>{
     const products = await this.productRepository.find({
       take: query.limit,
       where: { 
         isDeleted: false,
-        name : Like(`%${query.name}%`), 
+        name : Like(`%${query.name}%`),
+        // Filtrar dentro del array de categorias 
+        // category:
+        // categories: ArrayContains([query.category]),
       },
       relations: {
         categories: true,

@@ -37,24 +37,24 @@ export class ProductsController {
   // }
 
   
-  @Get()
-  findAll() {
-    return this.productsService.findAll();
-  }
+  // @Get()
+  // findAll() {
+  //   return this.productsService.findAll();
+  // }
   
-  @Get('/search')
-  findProductByName(@Query(new ValidationPipe()) query : QueryProductDto)  {
+  @Get()
+  searchProductByQueryParams(@Query(new ValidationPipe()) query : QueryProductDto)  {
 
     const mergedQuery = {
-      limit : 2,
-      order : 'name',
+      // limit : 5,
+      order : 'id',
       name : '',
       ...query
     }
 
-    return this.productsService.searchProductByName(mergedQuery);
+    return this.productsService.searchProductByQueryParams(mergedQuery);
   }
-
+  
   @Get("getFile")
   getFile(@Res() res: Response, @Query('fileName') fileName: string) {
     res.sendFile(path.join(__dirname, "../../../uploads/" + fileName));
