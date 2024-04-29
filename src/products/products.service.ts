@@ -1,49 +1,137 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
+import { ProductResponse } from './interfaces/product-response.interface';
+import { User } from 'src/auth/entities/user.entity';
+import { CategoriesService } from 'src/categories/categories.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
-    @InjectRepository(Product) private productRepository: Repository<Product>
-  ) {}
-  async create(createProductDto: CreateProductDto, file: any) {
-    const filePath = join('./uploads', file.filename);
+    @InjectRepository(Product) private readonly productRepository: Repository<Product>,
+    private readonly categoryService: CategoriesService
+  ) { }
+
+  async create(createProductDto: CreateProductDto, file: any, currentUser: User): Promise<Product> {
     try {
-      const {name, description} = createProductDto;
-      const text = {
-        name,
-        description,
-        imagen: filePath
-      }
-      const newProduct = this.productRepository.create(text)
-      await this.productRepository.save(newProduct)
-      return newProduct
+      const { categoriesIds } = createProductDto;
+
+      const createdCategories = await this.categoryService.getCategoriesByIds(categoriesIds);
+
+      let newProduct = this.productRepository.create(createProductDto);
+
+      newProduct.addedBy = currentUser;
+      newProduct.categories = createdCategories;
+      newProduct.imagen = file.filename;
+      newProduct.isDeleted = false;
+      
+      newProduct = await this.productRepository.save(newProduct);
+
+      delete newProduct.isDeleted;
+      
+      return newProduct;
+    
     } catch (error) {
-        throw new InternalServerErrorException('Ocurrió lo peor, no tuvimos clases')
+      if (error.status === 404) return error.response;
+
+      console.log(error)
+      
+      throw new InternalServerErrorException('Something terrible happen!');
     }
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll(): Promise<ProductResponse[]> {    // return `This action returns all products`;
+    const products = await this.productRepository.find({
+      where: { isDeleted: false },
+      relations: {
+        categories: true,
+        addedBy: true
+      },
+      select: {
+        categories: {
+          id: true,
+          categoryName: true
+        },
+        addedBy: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+        }
+      }
+    });
+
+    return products;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: number) {    // return `This action returns a #${id} product`;
+    const product = await this.productRepository.findOne({
+      where: {
+        id: id,
+        isDeleted: false
+      },
+      relations: {
+        categories: true,
+        addedBy: true
+      },
+      select: {
+        categories: {
+          id: true,
+          categoryName: true
+        },
+        addedBy: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+        }
+      }
+    })
+
+    if (!product) throw new NotFoundException(`Product id #${id} does not exists`)
+
+    return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: number, updateProductDto: Partial<UpdateProductDto>, file: any): Promise<ProductResponse> { 
+    try{
+      const productFound = await this.findOne(id);
+
+      const { categoriesIds } = updateProductDto
+  
+      if (categoriesIds) {
+        productFound.categories = await this.categoryService.getCategoriesByIds(categoriesIds);
+      }
+
+      if (file) productFound.imagen = file.filename;
+
+      this.productRepository.merge(productFound, updateProductDto);
+      
+      return await this.productRepository.save(productFound);
+      
+    } catch (error) {
+      if (error.status === 404) return error.response;
+
+      throw new InternalServerErrorException('Something terrible happen!');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async delete(id: number): Promise<ProductResponse> {  
+    try {
+      let productFound = await this.findOne(id);
+  
+      productFound.isDeleted = true;
+  
+      return await this.productRepository.save(productFound);
+    } catch (error) {
+      if (error.status === 404) return error.response;
+
+      throw new InternalServerErrorException('Something terrible happen!');
+    }
   }
-}
+
+}//fin
