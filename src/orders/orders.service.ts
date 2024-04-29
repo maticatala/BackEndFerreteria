@@ -1,6 +1,5 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdatePedidoDto } from './dto/update-order.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { Order } from './entities/order.entity';
 import { Repository } from 'typeorm';
@@ -91,16 +90,16 @@ export class OrdersService {
   
   async update(id: number, updateOrderStatusDto: UpdateOrderStatusDto, currentUser: User) {
     let order = await this.findOne(id);
-    if (!order) throw new NotFoundException('Pedido no encontrado');
+    if (!order) throw new NotFoundException('Order not found');
 
     //El pedido fue entregado o cancelado.
     if (order.status === OrderStatus.DELIVERED || order.status === OrderStatus.CANCELLED){
-      throw new BadRequestException(`El pedido ya fue ${order.status}`)
+      throw new BadRequestException(`The order has already been  ${order.status}`)
     }
 
     //Pedido en proceso y actualiza el estado a enviado
     if (order.status === OrderStatus.PROCESSING && updateOrderStatusDto.status !== OrderStatus.SHIPPED){
-      throw new BadRequestException(`Pedido entregado antes de ser enviado !!!`)
+      throw new BadRequestException(`Order delivered before being shipped!!!`)
     }
 
     //Pedido enviado y actualiza el estado a enviado
@@ -127,10 +126,10 @@ export class OrdersService {
 
   async cancelled(id: number, currentUser: User){
     let order = await this.findOne(id);
-    if (!order) throw new NotFoundException('Pedido no encontrado');
+    if (!order) throw new NotFoundException('Order not found');
 
     if (order.status === OrderStatus.DELIVERED){
-      throw new BadRequestException('El pedido ya fue entregado')
+      throw new BadRequestException(`The order has already been ${order.status}`)
     }
 
     if (order.status === OrderStatus.CANCELLED) {
