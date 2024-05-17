@@ -1,15 +1,14 @@
-import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException, Query } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, Query } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { ArrayContains, Like, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import { ProductResponse } from './interfaces/product-response.interface';
 import { User } from 'src/auth/entities/user.entity';
 import { CategoriesService } from 'src/categories/categories.service';
-import { QueryProductDto } from './dto/find-product.dto';
-import dataSource from 'db/data-source';
+import { QueryProductDto } from './dto/query-product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -142,39 +141,48 @@ export class ProductsService {
     }
   }
 
-  async searchProductByQueryParams(@Query() query : QueryProductDto) : Promise<ProductResponse[]>{
-    const products = await this.productRepository.find({
-      take: query.limit,
-      where: { 
-        isDeleted: false,
-        name : Like(`%${query.name}%`),
-        // Filtrar dentro del array de categorias 
-        // category:
-        // categories: ArrayContains([query.category]),
-      },
-      relations: {
-        categories: true,
-        addedBy: true
-      },
-      select: {
-        categories: {
-          id: true,
-          categoryName: true
-        },
-        addedBy: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true
-        },
-      },
-      order: {
-        [query.order] : 'ASC',
+  async searchProductByQueryParams(@Query() query: QueryProductDto) {
+    let whereCondition: any = {
+      isDeleted: false
+    };
+
+    if (query.name) {
+      whereCondition.name = Like(`%${query.name}%`);
+    }
+
+    let queryBuilder = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.categories', 'category')
+      .leftJoinAndSelect('product.addedBy', 'user')
+      .leftJoinAndSelect('product.categories', 'allCategories') // Incluir todas las categorías del producto
+      .where(whereCondition);
+
+    if (query.category) {
+        queryBuilder = queryBuilder.andWhere('category.id = :categoryId', {
+        categoryId: query.category,
+      });
+    }
+
+    const [result, total] = await queryBuilder
+      .orderBy(`product.${query.orderBy}`, query.sortOrder)
+      .take(query.pageSize)
+      .skip((query.page - 1) * query.pageSize)
+      .getManyAndCount();
+
+    const remainingItems = total - (query.page - 1) * query.pageSize;
+    const itemCount = remainingItems > query.pageSize ? query.pageSize : remainingItems;
+    const totalPages = Math.ceil(total / query.pageSize);
+
+    return {
+      data: result,
+      meta: {
+        totalItems: total,
+        itemCount,
+        itemsPerPage: query.pageSize,
+        totalPages,
+        currentPage: query.page
       }
-    });
-
-    return products;
-
+    };
   }
 
 }//fin

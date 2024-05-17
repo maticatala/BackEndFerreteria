@@ -13,8 +13,8 @@ import { AuthenticationGuard } from 'src/utility/guards/authentication.guard';
 import { AuthorizeGuard } from 'src/utility/guards/authorization.guard';
 import { Roles } from 'src/auth/interfaces';
 import { Product } from './entities/product.entity';
-import { ProductResponse } from './interfaces/product-response.interface';
-import { QueryProductDto } from './dto/find-product.dto';
+import { QueryProductDto } from './dto/query-product.dto';
+
 
   const storage = diskStorage({
   destination: './uploads',
@@ -26,33 +26,15 @@ import { QueryProductDto } from './dto/find-product.dto';
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
-
-  // @Get()
-  // findByName(@Query('name') name: string) : Promise<ProductResponse[]> {
-  //   return this.productsService.searchProductByName(name);
-  // }
-  
-  // @Get()
-  // async getProductsByName(@Query query) : Promise<ProductResponse[]>{
-  // }
-
-  
-  // @Get()
-  // findAll() {
-  //   return this.productsService.findAll();
-  // }
   
   @Get()
   searchProductByQueryParams(@Query(new ValidationPipe()) query : QueryProductDto)  {
-
-    const mergedQuery = {
-      // limit : 5,
-      order : 'id',
-      name : '',
-      ...query
-    }
-
-    return this.productsService.searchProductByQueryParams(mergedQuery);
+    return this.productsService.searchProductByQueryParams(query);
+  }
+  
+  @Get('all')
+  findAll()  {
+    return this.productsService.findAll();
   }
   
   @Get("getFile")
