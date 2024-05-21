@@ -1,12 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
-import { Direction } from "src/directions/entities/direction.entity";
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, Timestamp, UpdateDateColumn } from "typeorm";
 import { Roles } from "../interfaces";
-import { Pedido } from "src/pedidos/entities/pedido.entity";
+import { Order } from "src/orders/entities/order.entity";
+import { Category } from "src/categories/entities/category.entity";
+import { Product } from "src/products/entities/product.entity";
 
 @Entity({ name: 'users' })
 export class User {
 
-//TODO: implementar UUID en vez de un numero auto incremental
   //* Establece el id como auto incremental
   @PrimaryGeneratedColumn()
   id: number;
@@ -15,8 +15,8 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
-  password?: string;
+  @Column({ select: false})
+  password: string;
 
   @Column()
   firstName: string;
@@ -24,16 +24,22 @@ export class User {
   @Column()
   lastName: string;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ type: 'enum', enum: Roles, default: Roles.user})
+  @Column({ type: 'enum', enum: Roles, default: Roles.USER})
   rol: Roles;
 
-  @OneToMany(() => Direction, (directions) => directions.user)
-  directions: Direction[];
+  @OneToMany((type) => Category, category => category.addedBy)
+  categories: Category[];
 
-  @OneToMany(() => Pedido, (pedidos) => pedidos.user)
-  pedidos: Pedido[];
+  @OneToMany((type) => Product, product => product.addedBy)
+  products: Category[];
+
+  @OneToMany((type) => Order, (order) => order.updatedBy)
+  ordersUpdateBy: Order[];
+
+  @OneToMany((type) => Order, (orders) => orders.user)
+  orders: Order[];
 }
 

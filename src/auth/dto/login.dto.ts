@@ -1,12 +1,15 @@
-import { Exclude } from "class-transformer";
-import { IsEmail, MinLength } from "class-validator";
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, MinLength } from "class-validator";
 
 export class LoginDto {
 
-  @IsEmail()
+  @IsNotEmpty({message: 'Email can not be empty.'})
+  @IsEmail({},{message: 'Please provide a valid email'})
   email: string;
   
-  @MinLength(6)
+  @IsNotEmpty({message: 'Password can not be empty.'})
+  @MinLength(6, {message: 'Password minimun character should be 6.'})
   password: string;
 
+  @IsOptional()
+  keepLogged: boolean;
 }

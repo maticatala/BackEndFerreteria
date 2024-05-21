@@ -4,33 +4,41 @@ import { UpdateProductDto } from './dto/update-product.dto';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { In, Repository } from 'typeorm';
-import { Category } from 'src/categories/category.entity';
+import { Repository } from 'typeorm';
 import { ProductResponse } from './interfaces/product-response.interface';
+import { User } from 'src/auth/entities/user.entity';
+import { CategoriesService } from 'src/categories/categories.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
-    @InjectRepository(Product) private productRepository: Repository<Product>,
-    @InjectRepository(Category) private categoryRepository: Repository<Category>
-  ) {}
+    @InjectRepository(Product) private readonly productRepository: Repository<Product>,
+    private readonly categoryService: CategoriesService
+  ) { }
 
-  async create(createProductDto: CreateProductDto, file: any) {
+  async create(createProductDto: CreateProductDto, file: any, currentUser: User): Promise<Product> {
     try {
       const { categoriesIds } = createProductDto;
-      
-      const createdCategories = await this.searchCategories(categoriesIds);
-      
-      const newProduct = this.productRepository.create(createProductDto);
 
+      const createdCategories = await this.categoryService.getCategoriesByIds(categoriesIds);
+
+      let newProduct = this.productRepository.create(createProductDto);
+
+      newProduct.addedBy = currentUser;
       newProduct.categories = createdCategories;
-
       newProduct.imagen = file.filename;
+      newProduct.isDeleted = false;
+      
+      newProduct = await this.productRepository.save(newProduct);
 
-      return await this.productRepository.save(newProduct)
+      delete newProduct.isDeleted;
+      
+      return newProduct;
     
     } catch (error) {
-      if (!error.errno) throw new BadRequestException(`${error.message}`);
+      if (error.status === 404) return error.response;
+
+      console.log(error)
       
       throw new InternalServerErrorException('Something terrible happen!');
     }
@@ -39,84 +47,91 @@ export class ProductsService {
   async findAll(): Promise<ProductResponse[]> {    // return `This action returns all products`;
     const products = await this.productRepository.find({
       where: { isDeleted: false },
-      relations: ['categories']
+      relations: {
+        categories: true,
+        addedBy: true
+      },
+      select: {
+        categories: {
+          id: true,
+          categoryName: true
+        },
+        addedBy: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+        }
+      }
     });
 
-    // Mapear los productos y eliminar el atributo isDeleted de cada uno
-    const productsResponse = products.map(product => {
-      const { isDeleted, ...productWithoutDeletedFlag } = product;
-      return productWithoutDeletedFlag;
-    });
-
-    return productsResponse;
+    return products;
   }
 
   async findOne(id: number) {    // return `This action returns a #${id} product`;
+    const product = await this.productRepository.findOne({
+      where: {
+        id: id,
+        isDeleted: false
+      },
+      relations: {
+        categories: true,
+        addedBy: true
+      },
+      select: {
+        categories: {
+          id: true,
+          categoryName: true
+        },
+        addedBy: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+        }
+      }
+    })
 
-    return await this.searchProduct(id);
+    if (!product) throw new NotFoundException(`Product id #${id} does not exists`)
 
+    return product;
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto, file: any): Promise<ProductResponse> { 
+  async update(id: number, updateProductDto: Partial<UpdateProductDto>, file: any): Promise<ProductResponse> { 
     try{
-      const { categoriesIds } = updateProductDto
+      const productFound = await this.findOne(id);
 
-      const productFound = await this.searchProduct(id);
+      const { categoriesIds } = updateProductDto
   
       if (categoriesIds) {
-        productFound.categories = await this.searchCategories(categoriesIds);
+        productFound.categories = await this.categoryService.getCategoriesByIds(categoriesIds);
       }
 
       if (file) productFound.imagen = file.filename;
 
       this.productRepository.merge(productFound, updateProductDto);
-
-      const { isDeleted, ...productResponse } = productFound;
       
-      return await this.productRepository.save(productResponse);
+      return await this.productRepository.save(productFound);
       
     } catch (error) {
-      if (!error.errno) throw new BadRequestException(error.message);
-      // throw new InternalServerErrorException('Something terrible happen!');
+      if (error.status === 404) return error.response;
+
+      throw new InternalServerErrorException('Something terrible happen!');
     }
-  }// fin async update
+  }
 
   async delete(id: number): Promise<ProductResponse> {  
- 
-    const product = await this.searchProduct(id);
+    try {
+      let productFound = await this.findOne(id);
+  
+      productFound.isDeleted = true;
+  
+      return await this.productRepository.save(productFound);
+    } catch (error) {
+      if (error.status === 404) return error.response;
 
-    product.isDeleted = true;
-    
-    await this.productRepository.save(product);
-
-    const { isDeleted, ...productResponse } = product;
-
-    return productResponse;
-
-  }
-
-  //PRIVATE METHODS
-  private async searchProduct(productId: number): Promise<Product> {
-    const productFound = await this.productRepository.findOne({
-      where: { id: productId, isDeleted: false },
-      relations: ['categories']
-    });
-
-    if (!productFound) throw new NotFoundException(`Product ${productId} does not exists!`);
-
-    return productFound;
-  }
-
-  private async searchCategories(categoryIds: number[]): Promise<Category[]> {
-
-    const categoryFound = await this.categoryRepository.find({
-      where: { id: In(categoryIds) }
-    });
-
-    if (categoryFound.length !== categoryIds.length)
-      throw new NotFoundException('Not all categories found');
-
-    return categoryFound;
+      throw new InternalServerErrorException('Something terrible happen!');
+    }
   }
 
 }//fin
