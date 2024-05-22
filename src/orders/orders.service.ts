@@ -10,6 +10,7 @@ import { Product } from 'src/products/entities/product.entity';
 import { ProductsService } from 'src/products/products.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from './enums/order-status.enum';
+import { Payment } from './entities/payment.entity';
 
 @Injectable()
 export class OrdersService {
@@ -27,6 +28,15 @@ export class OrdersService {
       const orderEntity = new Order();
       orderEntity.shippingAddress = shippingEntity;
       orderEntity.user = currentUser;
+
+            // Crear las entidades de pago y asignarlas a la orden
+      const paymentEntities = createOrderDto.payments.map(paymentDto => {
+        const payment = new Payment();
+        Object.assign(payment, paymentDto);
+        payment.order = orderEntity; // Asocia el pago con la orden
+        return payment;
+      });
+      orderEntity.payments = paymentEntities;
 
       const order = await this.orderRepository.save(orderEntity);
 
@@ -54,9 +64,11 @@ export class OrdersService {
         .values(opEntity)
         .execute();
 
+  
       return await this.findOne(order.id);
     } catch (error) {
-      
+      console.error('Error creating order:', error);
+      throw error; // O puedes lanzar una excepción personalizada
     }
 
   }
@@ -71,7 +83,8 @@ export class OrdersService {
         user: true,
         products: {
           product: true
-        }
+        },
+        payments: true
       }
     })
   }
@@ -83,7 +96,8 @@ export class OrdersService {
         user: true,
         products: {
           product: true
-        }
+        },
+        payments: true
       }
     })
   }
