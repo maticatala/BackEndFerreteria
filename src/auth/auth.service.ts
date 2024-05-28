@@ -123,6 +123,21 @@ export class AuthService {
     }
   }
 
+  async updateUserById(updateUserDto: UpdateUserDto, currentUser: User){
+    try {
+      let editedUser = this.userRepository.merge(currentUser, updateUserDto);
+
+      editedUser = await this.userRepository.save(editedUser);
+
+      delete editedUser.password;
+
+      return editedUser;
+    } catch (error) {
+
+      throw new InternalServerErrorException('Something terrible happen!');
+    }
+  }
+
   async delete(id: number) {
     return await this.userRepository.delete(id);
   }

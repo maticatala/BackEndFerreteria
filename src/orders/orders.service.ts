@@ -11,12 +11,14 @@ import { ProductsService } from 'src/products/products.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from './enums/order-status.enum';
 import { Payment } from './entities/payment.entity';
+import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order) private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrdersProducts) private readonly opRepository: Repository<OrdersProducts>,
+    @InjectRepository(Payment) private readonly paymentRepository: Repository<Payment>,
     private readonly productService: ProductsService
   ) {}
 
@@ -100,6 +102,65 @@ export class OrdersService {
         payments: true
       }
     })
+  }
+
+  async getUserOrders(currentUser: User) {
+    try {
+      const orders = await this.orderRepository.find({
+        where: {user: currentUser},
+        relations: ['shippingAddress', 'products', 'payments']
+      });
+
+      if (!orders) throw new Error();
+  
+      return orders;
+    } catch (error) {
+      throw new Error('Error al obtener los pedidos del usuario');
+    }
+  }
+
+  async getUserOrderById(id: number, currentUser: User) {
+    try {
+      const order = await this.orderRepository.findOne({
+        where: {
+          id,
+          user: currentUser
+        },
+        relations: {
+          shippingAddress: true,
+          user: true,
+          products: {
+            product: true
+          },
+          payments: true
+        }
+      })
+
+      if (!order) throw new Error();
+
+      return order;
+    } catch (error) {
+      throw new Error('Error al obtener el pedido del usuario');
+    }
+  }
+
+  async updatePayment(id: number, updatePaymentStatusDto: UpdatePaymentStatusDto, currentUser: User) {
+    let payment = await this.paymentRepository.findOne({
+      where: {
+        id
+      },
+      relations: {
+        order: true
+      }
+    });
+
+    payment.status = updatePaymentStatusDto.status
+    payment = await this.paymentRepository.save(payment);
+
+    payment.order.updatedBy = currentUser;
+    await this.orderRepository.save(payment.order);
+
+    return payment;
   }
   
   async update(id: number, updateOrderStatusDto: UpdateOrderStatusDto, currentUser: User) {
