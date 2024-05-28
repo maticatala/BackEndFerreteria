@@ -10,12 +10,16 @@ import { Product } from 'src/products/entities/product.entity';
 import { ProductsService } from 'src/products/products.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from './enums/order-status.enum';
+import { Payment } from './entities/payment.entity';
+import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
+import { error } from 'console';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order) private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrdersProducts) private readonly opRepository: Repository<OrdersProducts>,
+    @InjectRepository(Payment) private readonly paymentRepository: Repository<Payment>,
     private readonly productService: ProductsService
   ) {}
 
@@ -27,6 +31,15 @@ export class OrdersService {
       const orderEntity = new Order();
       orderEntity.shippingAddress = shippingEntity;
       orderEntity.user = currentUser;
+
+            // Crear las entidades de pago y asignarlas a la orden
+      const paymentEntities = createOrderDto.payments.map(paymentDto => {
+        const payment = new Payment();
+        Object.assign(payment, paymentDto);
+        payment.order = orderEntity; // Asocia el pago con la orden
+        return payment;
+      });
+      orderEntity.payments = paymentEntities;
 
       const order = await this.orderRepository.save(orderEntity);
 
@@ -54,9 +67,11 @@ export class OrdersService {
         .values(opEntity)
         .execute();
 
+  
       return await this.findOne(order.id);
     } catch (error) {
-      
+      console.error('Error creating order:', error);
+      throw error; // O puedes lanzar una excepción personalizada
     }
 
   }
@@ -71,7 +86,8 @@ export class OrdersService {
         user: true,
         products: {
           product: true
-        }
+        },
+        payments: true
       }
     })
   }
@@ -83,9 +99,74 @@ export class OrdersService {
         user: true,
         products: {
           product: true
-        }
+        },
+        payments: true
       }
     })
+  }
+
+  async getUserOrders(currentUser: User) {
+    try {
+      const orders = await this.orderRepository.find({
+        where: {user: {
+          id: currentUser.id
+        }},
+        relations: ['shippingAddress', 'products', 'payments']
+      });
+
+      if(orders.length === 0) throw new Error();
+  
+      return orders;
+    } catch (error) {
+      console.log(error);
+      throw new Error('Error al obtener los pedidos del usuario');
+    }
+  }
+
+  async getUserOrderById(id: number, currentUser: User) {
+    try {
+      const order = await this.orderRepository.findOne({
+        where: {
+          id,
+          user: {
+            id: currentUser.id
+          }
+        },
+        relations: {
+          shippingAddress: true,
+          user: true,
+          products: {
+            product: true
+          },
+          payments: true
+        }
+      })
+
+      if (!order) throw new Error();
+
+      return order;
+    } catch (error) {
+      throw new Error('Error al obtener el pedido del usuario');
+    }
+  }
+
+  async updatePayment(id: number, updatePaymentStatusDto: UpdatePaymentStatusDto, currentUser: User) {
+    let payment = await this.paymentRepository.findOne({
+      where: {
+        id
+      },
+      relations: {
+        order: true
+      }
+    });
+
+    payment.status = updatePaymentStatusDto.status
+    payment = await this.paymentRepository.save(payment);
+
+    payment.order.updatedBy = currentUser;
+    await this.orderRepository.save(payment.order);
+
+    return payment;
   }
   
   async update(id: number, updateOrderStatusDto: UpdateOrderStatusDto, currentUser: User) {
@@ -141,10 +222,6 @@ export class OrdersService {
     order = await this.orderRepository.save(order);
 
     return order;
-  }
-
-  delete(id: number) {
-    throw new Error('Method not implemented.');
   }
 
 }
