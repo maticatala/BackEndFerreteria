@@ -20,15 +20,16 @@ export class OrdersController {
     return this.ordersService.create(createOrderDto, currentUser);
  } 
 
+ @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
+ @Get()
+ findAll(): Promise<Order[]> {
+   return this.ordersService.findAll();
+ }
+
   @UseGuards(AuthenticationGuard)
   @Get('/userOrders')
   getUserOrders(@CurrentUser() currentUser: User){
     return this.ordersService.getUserOrders(currentUser);
-  }
-
-  @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
-  findAll(): Promise<Order[]> {
-    return this.ordersService.findAll();
   }
 
   @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
