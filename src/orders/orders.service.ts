@@ -12,6 +12,7 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from './enums/order-status.enum';
 import { Payment } from './entities/payment.entity';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
+import { error } from 'console';
 
 @Injectable()
 export class OrdersService {
@@ -107,14 +108,17 @@ export class OrdersService {
   async getUserOrders(currentUser: User) {
     try {
       const orders = await this.orderRepository.find({
-        where: {user: currentUser},
+        where: {user: {
+          id: currentUser.id
+        }},
         relations: ['shippingAddress', 'products', 'payments']
       });
 
-      if (!orders) throw new Error();
+      if(orders.length === 0) throw new Error();
   
       return orders;
     } catch (error) {
+      console.log(error);
       throw new Error('Error al obtener los pedidos del usuario');
     }
   }
@@ -124,7 +128,9 @@ export class OrdersService {
       const order = await this.orderRepository.findOne({
         where: {
           id,
-          user: currentUser
+          user: {
+            id: currentUser.id
+          }
         },
         relations: {
           shippingAddress: true,
@@ -216,10 +222,6 @@ export class OrdersService {
     order = await this.orderRepository.save(order);
 
     return order;
-  }
-
-  delete(id: number) {
-    throw new Error('Method not implemented.');
   }
 
 }

@@ -20,18 +20,18 @@ export class OrdersController {
     return this.ordersService.create(createOrderDto, currentUser);
  } 
 
- @UseGuards(AuthenticationGuard)
- @Get('/userOrders')
- getUserOrders(@CurrentUser() currentUser: User){
-   return this.ordersService.getUserOrders(currentUser);
- }
+  @UseGuards(AuthenticationGuard)
+  @Get('/userOrders')
+  getUserOrders(@CurrentUser() currentUser: User){
+    return this.ordersService.getUserOrders(currentUser);
+  }
 
-  @Get()
+  @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   findAll(): Promise<Order[]> {
     return this.ordersService.findAll();
   }
 
-  @Get(':id')
+  @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   findOne(@Param('id') id: string): Promise<Order> {
     return this.ordersService.findOne(+id);
   }
@@ -58,11 +58,6 @@ export class OrdersController {
   @Put('cancel/:id')
   cancelled(@Param('id') id: string, @CurrentUser() currentUser: User){
     return this.ordersService.cancelled(+id, currentUser);
-  }
-
-  @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.ordersService.delete(+id);
   }
 }
 
