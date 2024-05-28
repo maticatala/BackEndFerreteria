@@ -20,11 +20,11 @@ export class OrdersController {
     return this.ordersService.create(createOrderDto, currentUser);
  } 
 
- @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
- @Get()
- findAll(): Promise<Order[]> {
-   return this.ordersService.findAll();
- }
+  @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
+  @Get()
+  findAll(): Promise<Order[]> {
+    return this.ordersService.findAll();
+  }
 
   @UseGuards(AuthenticationGuard)
   @Get('/userOrders')
@@ -33,6 +33,7 @@ export class OrdersController {
   }
 
   @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
+  @Get('/:id')
   findOne(@Param('id') id: string): Promise<Order> {
     return this.ordersService.findOne(+id);
   }
