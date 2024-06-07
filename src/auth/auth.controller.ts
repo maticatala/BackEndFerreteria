@@ -43,6 +43,12 @@ export class AuthController {
     return this.authService.findUserById(+id);
   }
 
+  @UseGuards(AuthenticationGuard)
+  @Patch('/updateUser')
+  updateUserById(@Body() updateUserDto: UpdateUserDto, @CurrentUser() currentUser: User) {
+    return this.authService.updateUserById(updateUserDto, currentUser);
+  }
+
   @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {

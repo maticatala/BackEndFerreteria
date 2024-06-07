@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Res, Query, ParseFilePipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Res, Query, ParseFilePipe, UseGuards, ValidationPipe } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -13,6 +13,8 @@ import { AuthenticationGuard } from 'src/utility/guards/authentication.guard';
 import { AuthorizeGuard } from 'src/utility/guards/authorization.guard';
 import { Roles } from 'src/auth/interfaces';
 import { Product } from './entities/product.entity';
+import { QueryProductDto } from './dto/query-product.dto';
+
 
   const storage = diskStorage({
   destination: './uploads',
@@ -24,10 +26,14 @@ import { Product } from './entities/product.entity';
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
-
   
   @Get()
-  findAll() {
+  searchProductByQueryParams(@Query(new ValidationPipe()) query : QueryProductDto)  {
+    return this.productsService.searchProductByQueryParams(query);
+  }
+  
+  @Get('all')
+  findAll()  {
     return this.productsService.findAll();
   }
   
@@ -36,10 +42,12 @@ export class ProductsController {
     res.sendFile(path.join(__dirname, "../../../uploads/" + fileName));
   }
   
-  @Get(':id')
+
+  @Get('/:id')
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(+id);
   }
+  
 
   @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Post()

@@ -1,8 +1,9 @@
 import { User } from "src/auth/entities/user.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { OrderStatus } from "../enums/order-status.enum";
 import { Shipping } from "./shipping.entity";
 import { OrdersProducts } from "./orders-product.entity";
+import { Payment } from "./payment.entity";
 
 @Entity({name: 'orders'})
 export class Order {
@@ -39,4 +40,7 @@ export class Order {
 
   @ManyToOne((type) => User, user => user.orders)
   user: User;
+
+  @OneToMany((type) => Payment, (payment) => payment.order, { cascade: true })
+  payments: Payment[];
 }
