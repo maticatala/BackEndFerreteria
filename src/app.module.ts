@@ -6,6 +6,9 @@ import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { dataSourceOptions } from 'db/data-source';
 import { CurrentUserMiddleware } from './utility/middlewares/current-user.middleware';
+import { MailModule } from './mail/mail.module';
+import { PaymentsController } from './payments/payments.controller';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -14,8 +17,10 @@ import { CurrentUserMiddleware } from './utility/middlewares/current-user.middle
     CategoriesModule,
     ProductsModule,
     OrdersModule,
+    MailModule,
+    PaymentsModule,
   ],
-  controllers: [],
+  controllers: [PaymentsController],
   providers: [],
 })
 export class AppModule implements NestModule {
