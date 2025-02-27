@@ -30,6 +30,9 @@ export class User {
   @Column({ type: 'enum', enum: Roles, default: Roles.USER})
   rol: Roles;
 
+  @Column({ type: 'uuid', unique: true, nullable: true, name: 'reset_password_token' })
+  resetPasswordToken: string;
+
   @OneToMany((type) => Category, category => category.addedBy)
   categories: Category[];
 

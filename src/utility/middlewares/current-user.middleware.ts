@@ -3,6 +3,16 @@ import { Request, Response, NextFunction } from 'express';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtPayload } from 'src/auth/interfaces/jwt-payload';
 import { verify } from 'jsonwebtoken';
+import { User } from 'src/auth/entities/user.entity';
+
+declare global {
+  namespace Express {
+    interface Request {
+      currentUser?: User;
+    }
+  }
+}
+
 
 @Injectable()
 export class CurrentUserMiddleware implements NestMiddleware {
@@ -13,7 +23,7 @@ export class CurrentUserMiddleware implements NestMiddleware {
     const token = this.extractTokenFromHeader(req);
 
     if (!token) {
-      req['user'] = null;
+      req.currentUser = null;
       next();
       return;
     } 
@@ -22,12 +32,14 @@ export class CurrentUserMiddleware implements NestMiddleware {
     //Validamos el token
     try {
       const { id } = <JwtPayload>verify(token, process.env.JWT_SEED);
-      const user = await this.authService.findUserById(+id);
+      const currentUser = await this.authService.findUserById(+id);
 
       //Asigna una propiedad "user" a la request y le guarda el usuario
-      req['user'] = user;
+      req.currentUser = currentUser;
+      next();
     } catch (error) {
-      throw new UnauthorizedException();
+      req.currentUser = null;
+      next();
     }
     next();
   }
