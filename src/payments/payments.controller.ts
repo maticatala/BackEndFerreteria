@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreateMpOrderDto } from './dto/create-mp-order.dto';
 import { CurrentUser } from 'src/utility/decorators/current-user.decorator';
@@ -27,26 +27,27 @@ export class PaymentsController {
     // }
 
     @UseGuards(AuthenticationGuard)
-    @Post('/create-order') //31.15
+    @Post('/create-order') 
     async createOrder(@Body() createOrderDto: CreateOrderDto, @CurrentUser() currentUser: User): Promise<string> {
       return await this.paymentsService.createOrder(createOrderDto, currentUser);
     }
 
-    @Get('success')
-    success(@Res() res) {
-      res.send('Pago aprobado. ¡Gracias por tu compra!');
+    @Post('/webhook')
+    async webhook(@Req() req, @CurrentUser() currentUser: User) {
+      await this.paymentsService.updatePayment(req, currentUser);
       
     }
   
-    @Get('failure')
-    failure(@Res() res) {
-      res.send('Hubo un problema con tu pago. Intenta nuevamente.');
+    @Get('failure/:orderId')
+    async failure(@Res() res, @Param('orderId') orderId: string) {
+      // await this.paymentsService.deleteOrder(+orderId)
+      return res.redirect('http://localhost:4200/#/checkout');
     }
   
-    @Post('webhook')
-    async pending(@Req() req, @CurrentUser() currentUser: User) {
-
-      await this.paymentsService.updatePayment(req, currentUser);
+    @Get('pending')
+    pending(@Req() req, @Res() res) {
+      res.send('Tu pago esta pendiente');
+      
 
       // if (req.body?.data?.id) {
       //   console.log(req.body);

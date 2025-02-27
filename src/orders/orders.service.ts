@@ -104,6 +104,7 @@ async updatePayment(
   updatePaymentStatusDto: UpdatePaymentStatusDto,
   currentUser: User
 ) {
+  console.log("updatePaymentStatusDto",updatePaymentStatusDto);
   let payment = await this.paymentRepository.findOne({
     where: { id },
     relations: { order: true }
@@ -117,8 +118,13 @@ async updatePayment(
   payment.status = updatePaymentStatusDto.status;
   payment = await this.paymentRepository.save(payment);
 
+
+
   if (payment.order) {
     payment.order.updatedBy = currentUser;
+    if( payment.status !== 'approved' && payment.status !== 'pending'){
+      payment.order.status = OrderStatus.CANCELLED
+    } 
     await this.orderRepository.save(payment.order);
   }
 
@@ -144,62 +150,62 @@ async updatePayment(
   //   return payment;
   // }
   
-  async createOrderMp(createOrderDto: CreateOrderDto, currentUser: User) {
-    try {
-      const shippingEntity = new Shipping();
-      Object.assign(shippingEntity, createOrderDto.shippingAddress);
+  // async createOrderMp(createOrderDto: CreateOrderDto, currentUser: User) {
+  //   try {
+  //     const shippingEntity = new Shipping();
+  //     Object.assign(shippingEntity, createOrderDto.shippingAddress);
 
-      const orderEntity = new Order();
-      orderEntity.shippingAddress = shippingEntity;
-      orderEntity.user = currentUser;
+  //     const orderEntity = new Order();
+  //     orderEntity.shippingAddress = shippingEntity;
+  //     orderEntity.user = currentUser;
       
-      const payment = new Payment();
-      payment.paymentType = "MP";
-      payment.amount = 0;
-      payment.currency = "ARS";
-      payment.status = "PENDING";
-      payment.order = orderEntity; // Asocia el pago con la orden
+  //     const payment = new Payment();
+  //     payment.paymentType = "MP";
+  //     payment.amount = 0;
+  //     payment.currency = "ARS";
+  //     payment.status = "PENDING";
+  //     payment.order = orderEntity; // Asocia el pago con la orden
 
-      const payments = [payment];
+  //     const payments = [payment];
 
-      console.log('pasando payments');
+  //     console.log('pasando payments');
 
-      orderEntity.payments = payments;
+  //     orderEntity.payments = payments;
 
-      const order = await this.orderRepository.save(orderEntity);
+  //     const order = await this.orderRepository.save(orderEntity);
 
-      //Arreglo de lineas de pedido
-      let opEntity: {
-        order: Order,
-        product: Product,
-        product_quantity: number,
-        product_unit_price: number
-      }[] = []
+  //     //Arreglo de lineas de pedido
+  //     let opEntity: {
+  //       order: Order,
+  //       product: Product,
+  //       product_quantity: number,
+  //       product_unit_price: number
+  //     }[] = []
       
-      //Llena el arreglo utilizando el DTO de orderedProducts
-      for (let i = 0; i < createOrderDto.orderedProducts.length; i++){
-        const product = await this.productService.findOne(createOrderDto.orderedProducts[i].id)
-        const product_quantity = createOrderDto.orderedProducts[i].product_quantity;
-        const product_unit_price = product.price;
-        opEntity.push({ order, product, product_quantity, product_unit_price });
-      }
+  //     //Llena el arreglo utilizando el DTO de orderedProducts
+  //     for (let i = 0; i < createOrderDto.orderedProducts.length; i++){
+  //       const product = await this.productService.findOne(createOrderDto.orderedProducts[i].id)
+  //       const product_quantity = createOrderDto.orderedProducts[i].product_quantity;
+  //       const product_unit_price = product.price;
+  //       opEntity.push({ order, product, product_quantity, product_unit_price });
+  //     }
 
-      //Crea la linea de pedido
-      const op = await this.opRepository
-        .createQueryBuilder()
-        .insert()
-        .into(OrdersProducts)
-        .values(opEntity)
-        .execute();
+  //     //Crea la linea de pedido
+  //     const op = await this.opRepository
+  //       .createQueryBuilder()
+  //       .insert()
+  //       .into(OrdersProducts)
+  //       .values(opEntity)
+  //       .execute();
 
-      // return await this.paymentsService.createOrder(order);
+  //     // return await this.paymentsService.createOrder(order);
       
-      return await this.findOne(order.id);
-    } catch (error) {
-      console.error('Error creating order:', error);
-      throw error; // O puedes lanzar una excepción personalizada
-    }
-  }
+  //     return await this.findOne(order.id);
+  //   } catch (error) {
+  //     console.error('Error creating order:', error);
+  //     throw error; // O puedes lanzar una excepción personalizada
+  //   }
+  // }
 
   async findOne(id: number) {
     return await this.orderRepository.findOne({
@@ -329,5 +335,17 @@ async updatePayment(
 
     return order;
   }
+
+  // async deleteOrder(id: number) {
+  //   const order = await this.findOne(id);
+
+  //   if(!order) throw new NotFoundException('Order not found');
+
+  //SE HACE CON EL REPOSITORIO DE ORDER PRODUCTS
+
+
+  //   return await this.orderRepository.delete(id);
+
+  // }
 
 }

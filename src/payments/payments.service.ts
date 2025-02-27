@@ -28,7 +28,7 @@ export class PaymentsService {
 
   async createOrder(createOrderDto: CreateOrderDto, currentUser: User): Promise<any> {
 
-    const order = await this.ordersService.createOrderMp(createOrderDto, currentUser);
+    const order = await this.ordersService.create(createOrderDto, currentUser);
 
     const items: ItemMP[] = order.products.map((orderProduct) => ({
       id: String(orderProduct.product.id),          // Convertir el id a string si es numérico
@@ -41,18 +41,21 @@ export class PaymentsService {
     const body = {
       items,
       back_urls: {
-          failure: 'http://localhost:3000/payments/failure',
-          success: 'http://localhost:3000/payments/success',
+          failure: `http://localhost:3000/payments/failure/${order.id}`,
+          success: 'http://localhost:4200/#/payment-confirmation',
           pending: 'http://localhost:3000/payments/pending',
       },
-      notification_url: 'https://f699-2803-9800-98c1-70ff-b1c7-390c-59f1-7aca.ngrok-free.app/payments/webhook',
+      notification_url: 'https://a0e9-2803-9800-98cd-6ae3-94a4-204e-fc9b-ba75.ngrok-free.app/payments/webhook',
       auto_return: 'approved',
-      external_reference: order.id.toString(),
+      external_reference: order.payments[0].id.toString(),
     }
 
     try {
+      // console.log("order",order);
+      // console.log("items",items);
+      // console.log("body",body);
       const result = await this.mercadopago.create({body})
-      console.log("result",result);
+      // console.log("result------------------------------------------------------------------------",result);
 
       const mpPreferenceId = result.id;
       order.payments[0].transactionId = mpPreferenceId;
@@ -88,16 +91,18 @@ export class PaymentsService {
     const notificationData = req.body.data;
     if(!notificationData ) return;
     const payment = await this.getPaymentById(notificationData.id);
-    // if (notificationData.id && payment.external_reference) {
 
-    //   const orderId = Number(payment.external_reference);
-      
-    if(payment.status === 'approved') newStatus = PaymentStatus.APPROVED; // 'approved', 'rejected', etc.
+    for (const status of Object.values(PaymentStatus)) {
+      if (payment.status === status) {
+        newStatus = status
+        break
+      }; 
+    }
 
-
+    if (!newStatus ) return;
       // Actualiza el Payment en la orden según la notificación
     await this.ordersService.updatePayment(
-      payment.id, 
+      Number(payment.external_reference), 
       {
         transactionId: notificationData.id,
         status: newStatus,
@@ -107,6 +112,10 @@ export class PaymentsService {
     // }
     return HttpStatus.OK;
   }
+
+  // async deleteOrder(orderId: number) {
+  //   return await this.ordersService.deleteOrder(orderId);
+  // }
 
 }
     
