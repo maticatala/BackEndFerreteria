@@ -1,7 +1,8 @@
+import { Roles } from 'src/auth/interfaces';
 import { Category } from 'src/categories/entities/category.entity';
 import { OrderEntity } from 'src/orders/entities/order.entity';
 import { ProductEntity } from 'src/products/entities/product.entity';
-import { RoleEntity } from 'src/roles/entities/role.entity';
+// import { RoleEntity } from 'src/roles/entities/role.entity';
 
 import {
   Column,
@@ -42,9 +43,8 @@ export class UserEntity {
   @CreateDateColumn({name: 'created_at'})
   createdAt: Timestamp;
 
-
-  @ManyToOne(() => RoleEntity, (role) => role.users)
-  role: RoleEntity;
+  @Column({ type: 'enum', enum: Roles, default: Roles.USER})
+  rol: Roles;
 
   @OneToMany(() => OrderEntity, (order) => order.updatedBy)
   orders: OrderEntity[];

@@ -225,6 +225,7 @@
 // }
 
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -247,7 +248,7 @@ import { RequestResetPasswordDto } from './dto/request-reset-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
-import { RolesService } from 'src/roles/roles.service';
+// import { RolesService } from 'src/roles/roles.service';
 import { ChangeRoleDto } from './dto/change-role.dto';
 import { RegisterDto } from './dto';
 import { LoginResponse } from './interfaces';
@@ -264,7 +265,7 @@ export class AuthService {
     @Inject('IMailService')
       private readonly mailService: IMailService,
     private validatorService: ValidatorService,
-    private roleService: RolesService,
+    // private roleService: RolesService,
     private jwtService: JwtService,
   ) {
     this.jwtService = new JwtService();
@@ -353,7 +354,7 @@ export class AuthService {
     const payload: JwtPayload = {
       id: user.id,
       email: user.email,
-      roleId: user.role ? user.role.id : null,
+      // roleId: user.role ? user.role.id : null,
       active: user.active,
     };
 
@@ -389,32 +390,38 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto): Promise<LoginResponse> {
-
+    console.log('Datos recibidos en register:', registerDto);
+  
     const user = await this.createUser(registerDto);
-
+  
+    console.log('Usuario creado:', user);
+  
     return {
       user,
-      token: this.getJwtToken({ id: user.id}),
-    }
+      token: this.getJwtToken({ id: user.id }),
+    };
   }
 
-    async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
+  async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
+    console.log('🛠 Valor de rol recibido en createUser:', createUserDto.rol); // 👈 Agrega este log
     let user = this.authRepository.create(createUserDto);
-    // const {rol} = createUserDto;
+    
     try {
-      // user.role = await this.roleService.findOne(Number(rol));
+      // user.role = await this.roleService.findOne(Number(createUserDto.rol));
       user = await this.authRepository.save(user);
       return user;
     } catch (error) {
-    //   if (error.code === 'ER_DUP_ENTRY') {
-    //     throw new ConflictException({
-    //       code: 'EMAIL_ALREADY_REGISTERED',
-    //       message: 'Email ya registrado',
-    //     });
-    //   }
-    //   throw new InternalServerErrorException();
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new ConflictException({
+          code: 'EMAIL_ALREADY_REGISTERED',
+          message: 'Email ya registrado',
+        });
+      }
+      throw new InternalServerErrorException();
     }
   }
+  
+  
 
   private async sendRequestPasswordEmail(user: UserEntity): Promise<void> {
     await this.mailService.restorePassword(
@@ -464,19 +471,16 @@ export class AuthService {
 
     const user = await this.validatorService.validateUserExistsById(Number(userId));
 
-    const role = await this.roleService.findOne(roleId);
+    // const role = await this.roleService.findOne(roleId);
 
-    user.role = role;
+    // user.role = role;
 
     this.authRepository.save(user);
   }
 
-  getJwtToken( payload: JwtPayload) {
-
-    if (this.keepLogged) {
-      return this.jwtService.sign(payload); // Token sin tiempo de expiración
-    } else {
-      return this.jwtService.sign(payload, { expiresIn: '1hr' });
-    }
+  getJwtToken(payload: any): string {
+    return this.jwtService.sign(payload, {
+      secret: process.env.ACCESS_TOKEN_SECRET_KEY, // Usar la clave secreta
+    });
   }
 }

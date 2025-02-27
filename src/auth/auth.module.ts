@@ -7,7 +7,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { OrderEntity } from 'src/orders/entities/order.entity';
 import { ValidatorService } from './validator.service';
-import { RolesModule } from 'src/roles/roles.module copy';
+// import { RolesModule } from 'src/roles/roles.module copy';
 
 
 @Module({
@@ -19,13 +19,13 @@ import { RolesModule } from 'src/roles/roles.module copy';
     JwtModule.registerAsync({
       imports: [ConfigModule], // ✅ Importa ConfigModule para usar ConfigService
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'), // ✅ Clave desde .env
-        signOptions: { expiresIn: '30d' }, // ✅ Opciones de firma, expira en 30 días
+        secret: configService.get<string>('ACCESS_TOKEN_SECRET_KEY'), // ✅ Clave desde .env
+        // signOptions: { expiresIn: '30d' }, // ✅ Opciones de firma, expira en 30 días
       }),
       inject: [ConfigService], // ✅ Inyecta ConfigService en useFactory
     }),
 
-    RolesModule, // ✅ Importa RolesModule
+    // RolesModule, // ✅ Importa RolesModule
   ],
   controllers: [AuthController], // ✅ Controladores del módulo
   providers: [AuthService, ValidatorService], // ✅ Proveedores del módulo

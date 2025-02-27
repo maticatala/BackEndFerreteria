@@ -1,15 +1,15 @@
-import { PartialType } from "@nestjs/mapped-types";
-import { CreateRoleDto, Permission } from "./role.dto";
-import { IsNotEmpty, IsString, ValidateNested } from "class-validator";
-import { Type } from "class-transformer";
+// import { PartialType } from "@nestjs/mapped-types";
+// import { CreateRoleDto, Permission } from "./role.dto";
+// import { IsNotEmpty, IsString, ValidateNested } from "class-validator";
+// import { Type } from "class-transformer";
 
-export class UpdateRoleDto  {
+// export class UpdateRoleDto  {
     
-    @IsString()
-    name: string;
+//     @IsString()
+//     name: string;
 
-    @ValidateNested()
-    @Type(() => Permission)
-    permissions: Permission[];
+//     @ValidateNested()
+//     @Type(() => Permission)
+//     permissions: Permission[];
 
-}
+// }

@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcryptjs from 'bcryptjs';
 // import { RoleEntity } from 'src/roles/entities/role.entity';
+// import { RoleEntity } from 'src/roles/entities/role.entity';
 
 @Injectable()
 export class ValidatorService {
@@ -30,7 +31,7 @@ export class ValidatorService {
   }
 
   async validateUserExistsByEmail(email: string): Promise<UserEntity> {
-    const userExists = await this.authRepository.findOne({where:{email}, relations: ['role']});
+    const userExists = await this.authRepository.findOne({where:{email}});
 
     if (!userExists) {
       throw new NotFoundException({
@@ -92,7 +93,7 @@ export class ValidatorService {
     }
   }
 
-  // async validateUserRole(role: RoleEntity) {
-  //   return await this.authRepository.findOne({ where: {role}}) 
-  // }
+    // async validateUserRole(role: RoleEntity) {
+    //   return await this.authRepository.findOne({ where: {id: role.id}, relations: ['role'] }); 
+    // }
 }
