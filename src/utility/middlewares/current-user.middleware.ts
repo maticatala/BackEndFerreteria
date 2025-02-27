@@ -20,6 +20,7 @@ export class CurrentUserMiddleware implements NestMiddleware {
     private readonly authService: AuthService,
   ){}
   async use(req: Request, res: Response, next: NextFunction) {
+
     const token = this.extractTokenFromHeader(req);
 
     if (!token) {
@@ -32,16 +33,17 @@ export class CurrentUserMiddleware implements NestMiddleware {
     //Validamos el token
     try {
       const { id } = <JwtPayload>verify(token, process.env.JWT_SEED);
+
       const currentUser = await this.authService.findUserById(+id);
 
       //Asigna una propiedad "user" a la request y le guarda el usuario
       req.currentUser = currentUser;
+
       next();
     } catch (error) {
       req.currentUser = null;
       next();
     }
-    next();
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
