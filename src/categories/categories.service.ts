@@ -1,10 +1,10 @@
+import { UserEntity } from 'src/users/entities/user.entity';
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
 import { In, Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class CategoriesService {
@@ -14,7 +14,7 @@ export class CategoriesService {
     private readonly categoryRepository: Repository<Category>
   ) {}
 
-  async createCategory(category: CreateCategoryDto, currentUser: User): Promise<Category>{
+  async createCategory(category: CreateCategoryDto, currentUser: UserEntity): Promise<Category>{
     try {
 
       const newCategory = this.categoryRepository.create(category);

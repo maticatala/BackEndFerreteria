@@ -1,11 +1,13 @@
-import { User } from "src/auth/entities/user.entity";
+
 import { Category } from "src/categories/entities/category.entity";
 import { OrdersProducts } from "src/orders/entities/orders-product.entity";
+import { UserEntity } from "src/users/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+// import { User } from '../../auth/entities/user.entity';
 
 
 @Entity({name: 'products'})
-export class Product {
+export class ProductEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -30,8 +32,8 @@ export class Product {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne((type) => User, user => user.products)
-  addedBy: User;
+  @ManyToOne((type) => UserEntity, user => user.products)
+  addedBy: UserEntity;
 
   @ManyToMany((type) => Category, (category) => category.products)
   @JoinTable()

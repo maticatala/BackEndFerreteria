@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Order } from "./order.entity";
-import { Product } from "src/products/entities/product.entity";
+import { OrderEntity } from "./order.entity";
+import { ProductEntity } from "src/products/entities/product.entity";
 
 //Una relación muchos a muchos con atributos se transforma en una nueva entidad 
 //! Cambiar nombre a orders_lines
@@ -18,11 +18,11 @@ export class OrdersProducts {
   product_quantity: number;
 
   //Un pedido puede debe tener una o muchas lineas de pedido, una linea de pedido pertenece a un unico pedido
-  @ManyToOne((type) => Order, order => order.products)
-  order: Order;
+  @ManyToOne((type) => OrderEntity, order => order.products)
+  order: OrderEntity;
     
   //Un producto puede estar en muchas lineas de pedido, una linea de pedido tiene un unico producto
   //? ¿Hace falta el cascade true si tenemos una baja logica de los productos?
-  @ManyToOne((type) => Product, product => product.orders, {cascade: true})
-  product: Product;
+  @ManyToOne((type) => ProductEntity, product => product.orders, {cascade: true})
+  product: ProductEntity;
 }

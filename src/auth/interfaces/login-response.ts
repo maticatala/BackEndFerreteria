@@ -1,9 +1,9 @@
-import { User } from "../entities/user.entity";
+import { UserEntity } from './../../users/entities/user.entity';
 
 
 export interface LoginResponse {
   
-  user: User;
+  user: UserEntity;
   
   token: string;
 

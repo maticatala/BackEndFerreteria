@@ -2,8 +2,10 @@
 
 export interface JwtPayload{
 
-  id: number;
-  iat?: number;
-  exp?: number;
-  
+  id: string;
+  email: string;
+  active: boolean;
+  // roleId: number;
+
+
 }

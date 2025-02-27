@@ -8,12 +8,13 @@ import { diskStorage } from 'multer';
 import { Response } from 'express';
 import * as path from "path";
 import { CurrentUser } from 'src/utility/decorators/current-user.decorator';
-import { User } from 'src/auth/entities/user.entity';
+
 import { AuthenticationGuard } from 'src/utility/guards/authentication.guard';
 import { AuthorizeGuard } from 'src/utility/guards/authorization.guard';
 import { Roles } from 'src/auth/interfaces';
-import { Product } from './entities/product.entity';
+import { ProductEntity } from './entities/product.entity';
 import { QueryProductDto } from './dto/query-product.dto';
+import { UserEntity } from 'src/users/entities/user.entity';
 
 
   const storage = diskStorage({
@@ -52,7 +53,7 @@ export class ProductsController {
   @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Post()
   @UseInterceptors(FileInterceptor('file', { storage }))
-  create(@Body() createProductDto: CreateProductDto, @UploadedFile() file, @CurrentUser() currentUser: User): Promise<Product> {
+  create(@Body() createProductDto: CreateProductDto, @UploadedFile() file, @CurrentUser() currentUser: UserEntity): Promise<ProductEntity> {
     return this.productsService.create(createProductDto, file, currentUser);
   } 
   

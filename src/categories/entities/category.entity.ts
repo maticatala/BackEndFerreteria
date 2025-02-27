@@ -1,5 +1,5 @@
-import { User } from "src/auth/entities/user.entity";
-import { Product } from "src/products/entities/product.entity";
+import { UserEntity } from 'src/users/entities/user.entity';
+import { ProductEntity } from "src/products/entities/product.entity";
 import { Column, CreateDateColumn, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity({name: 'categories'})
@@ -17,10 +17,10 @@ export class Category{
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne((type) => User, user => user.categories)
-  addedBy: User;
+  @ManyToOne((type) => UserEntity, user => user.categories)
+  addedBy: UserEntity;
 
-  @ManyToMany((type) => Product, (product) => product.categories)
-  products: Product[];
+  @ManyToMany((type) => ProductEntity, (product) => product.categories)
+  products: ProductEntity[];
 
 }

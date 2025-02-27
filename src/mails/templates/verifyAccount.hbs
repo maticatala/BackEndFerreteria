@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      padding: 20px;
+      border: 1px solid #dddddd;
+      border-radius: 5px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      color: #333333;
+    }
+    .content {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #555555;
+    }
+    .button {
+      display: inline-block;
+      margin: 20px 0;
+      padding: 10px 20px;
+      background-color: #164B42;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      text-align: center;
+      color: #aaaaaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Invitación para unirte al equipo de WPC</h1>
+    </div>
+    <div class="content">
+      <p>Hola {{name}},</p>
+      <p>Nos complace invitarte a formar parte del equipo de WPC como miembro del staff.</p>
+      <p>Por favor, confirma tu cuenta creando una contraseña para acceder a la plataforma.</p>
+      <p>Para ello, haz clic en el siguiente botón para completar tu registro:</p>
+      <a class="button" href="{{verificationLink}}" target="_blank">Confirmar mi cuenta</a>
+      <p>Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:</p>
+      <p>{{verificationLink}}</p>
+    </div>
+    <div class="footer">
+      <p>Si no solicitaste esta invitación, puedes ignorar este correo de manera segura.</p>
+    </div>
+  </div>
+</body>
+</html>

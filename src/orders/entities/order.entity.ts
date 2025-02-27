@@ -1,12 +1,12 @@
-import { User } from "src/auth/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { OrderStatus } from "../enums/order-status.enum";
 import { Shipping } from "./shipping.entity";
 import { OrdersProducts } from "./orders-product.entity";
-import { Payment } from "./payment.entity";
+import { PaymentEntity } from "./payment.entity";
+import { UserEntity } from "src/users/entities/user.entity";
 
 @Entity({name: 'orders'})
-export class Order {
+export class OrderEntity {
 
   @PrimaryGeneratedColumn()
   public id:number;
@@ -26,8 +26,11 @@ export class Order {
   @Column({nullable: true})
   public deliveredAt: Date;
 
-  @ManyToOne((type) => User, (user) => user.ordersUpdateBy)
-  updatedBy: User;
+  @ManyToOne((type) => UserEntity, (user) => user.orders)
+  updatedBy: UserEntity;
+
+  @ManyToOne((type) => UserEntity, (user) => user.id)
+  addedBy: UserEntity;
 
   //cascade true ya que al eliminar un pedido tambien eliminaremos su direccion de entrega
   @OneToOne((type) => Shipping, (shipping) => shipping.order, { cascade: true })
@@ -38,9 +41,9 @@ export class Order {
   @OneToMany((type) => OrdersProducts, (orderProduct) => orderProduct.order, { cascade: true })
   products: OrdersProducts[];
 
-  @ManyToOne((type) => User, user => user.orders)
-  user: User;
+  @ManyToOne((type) => UserEntity, user => user.orders)
+  User: UserEntity;
 
-  @OneToMany((type) => Payment, (payment) => payment.order, { cascade: true })
-  payments: Payment[];
+  @OneToMany((type) => PaymentEntity, (payment) => payment.order, { cascade: true })
+  payments: PaymentEntity[];
 }

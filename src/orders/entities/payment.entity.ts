@@ -1,9 +1,9 @@
-import { Order } from "src/orders/entities/order.entity";
+import { OrderEntity } from "src/orders/entities/order.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { PaymentStatus } from "../enums/payment-status.enum";
 
 @Entity({ name: 'payments' })
-export class Payment {
+export class PaymentEntity {
       //* Establece el id como auto incremental
   @PrimaryGeneratedColumn()
   id: number;
@@ -30,6 +30,6 @@ export class Payment {
   @CreateDateColumn()
   paymentDate: Date;
 
-  @ManyToOne(() => Order, order => order.payments)
-  order: Order;
+  @ManyToOne(() => OrderEntity, order => order.payments)
+  order: OrderEntity;
 }

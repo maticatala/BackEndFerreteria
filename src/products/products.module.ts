@@ -3,14 +3,14 @@ import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Product } from './entities/product.entity';
-import { Order } from 'src/orders/entities/order.entity';
+import { ProductEntity } from './entities/product.entity';
+import { OrderEntity } from 'src/orders/entities/order.entity';
 import { CategoriesModule } from 'src/categories/categories.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([Product, Order]),
+    TypeOrmModule.forFeature([ProductEntity, OrderEntity]),
     CategoriesModule
   ],
   controllers: [ProductsController],

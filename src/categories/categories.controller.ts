@@ -1,3 +1,4 @@
+import { UserEntity } from 'src/users/entities/user.entity';
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -7,7 +8,6 @@ import { AuthenticationGuard } from 'src/utility/guards/authentication.guard';
 import { AuthorizeGuard } from 'src/utility/guards/authorization.guard';
 import { Roles } from 'src/auth/interfaces';
 import { CurrentUser } from 'src/utility/decorators/current-user.decorator';
-import { User } from 'src/auth/entities/user.entity';
 
 @Controller('categories')
 export class CategoriesController {
@@ -26,7 +26,7 @@ export class CategoriesController {
 
   @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Post()
-  createCategory(@Body() newCategory: CreateCategoryDto, @CurrentUser() currentUser: User): Promise<Category>{
+  createCategory(@Body() newCategory: CreateCategoryDto, @CurrentUser() currentUser: UserEntity): Promise<Category>{
     return this.categoryService.createCategory(newCategory, currentUser)
   }
 

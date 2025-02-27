@@ -1,40 +1,41 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { User } from 'src/auth/entities/user.entity';
-import { Order } from './entities/order.entity';
+
+import { OrderEntity } from './entities/order.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrdersProducts } from './entities/orders-product.entity';
 import { Shipping } from './entities/shipping.entity';
-import { Product } from 'src/products/entities/product.entity';
+import { ProductEntity } from 'src/products/entities/product.entity';
 import { ProductsService } from 'src/products/products.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from './enums/order-status.enum';
-import { Payment } from './entities/payment.entity';
+import { PaymentEntity } from './entities/payment.entity';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 import { error } from 'console';
+import { UserEntity } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class OrdersService {
   constructor(
-    @InjectRepository(Order) private readonly orderRepository: Repository<Order>,
+    @InjectRepository(OrderEntity) private readonly orderRepository: Repository<OrderEntity>,
     @InjectRepository(OrdersProducts) private readonly opRepository: Repository<OrdersProducts>,
-    @InjectRepository(Payment) private readonly paymentRepository: Repository<Payment>,
+    @InjectRepository(PaymentEntity) private readonly paymentRepository: Repository<PaymentEntity>,
     private readonly productService: ProductsService
   ) {}
 
-  async create(createOrderDto: CreateOrderDto, currentUser: User) {
+  async create(createOrderDto: CreateOrderDto, currentUser: UserEntity) {
     try {
       const shippingEntity = new Shipping();
       Object.assign(shippingEntity, createOrderDto.shippingAddress);
 
-      const orderEntity = new Order();
+      const orderEntity = new OrderEntity();
       orderEntity.shippingAddress = shippingEntity;
-      orderEntity.user = currentUser;
+      orderEntity.User = currentUser;
 
             // Crear las entidades de pago y asignarlas a la orden
       const paymentEntities = createOrderDto.payments.map(paymentDto => {
-        const payment = new Payment();
+        const payment = new PaymentEntity();
         Object.assign(payment, paymentDto);
         payment.order = orderEntity; // Asocia el pago con la orden
         return payment;
@@ -45,8 +46,8 @@ export class OrdersService {
 
       //Arreglo de lineas de pedido
       let opEntity: {
-        order: Order,
-        product: Product,
+        order: OrderEntity,
+        product: ProductEntity,
         product_quantity: number,
         product_unit_price: number
       }[] = []
@@ -83,7 +84,7 @@ export class OrdersService {
       },
       relations: {
         shippingAddress: true,
-        user: true,
+        User: true,
         products: {
           product: true
         },
@@ -96,7 +97,7 @@ export class OrdersService {
     return await this.orderRepository.find({
       relations: {
         shippingAddress: true,
-        user: true,
+        User: true,
         products: {
           product: true
         },
@@ -105,10 +106,10 @@ export class OrdersService {
     })
   }
 
-  async getUserOrders(currentUser: User) {
+  async getUserOrders(currentUser: UserEntity) {
     try {
       const orders = await this.orderRepository.find({
-        where: {user: {
+        where: {User: {
           id: currentUser.id
         }},
         relations: ['shippingAddress', 'products', 'payments']
@@ -123,18 +124,18 @@ export class OrdersService {
     }
   }
 
-  async getUserOrderById(id: number, currentUser: User) {
+  async getUserOrderById(id: number, currentUser: UserEntity) {
     try {
       const order = await this.orderRepository.findOne({
         where: {
           id,
-          user: {
+          User: {
             id: currentUser.id
           }
         },
         relations: {
           shippingAddress: true,
-          user: true,
+          User: true,
           products: {
             product: true
           },
@@ -150,7 +151,7 @@ export class OrdersService {
     }
   }
 
-  async updatePayment(id: number, updatePaymentStatusDto: UpdatePaymentStatusDto, currentUser: User) {
+  async updatePayment(id: number, updatePaymentStatusDto: UpdatePaymentStatusDto, currentUser: UserEntity) {
     let payment = await this.paymentRepository.findOne({
       where: {
         id
@@ -169,7 +170,7 @@ export class OrdersService {
     return payment;
   }
   
-  async update(id: number, updateOrderStatusDto: UpdateOrderStatusDto, currentUser: User) {
+  async update(id: number, updateOrderStatusDto: UpdateOrderStatusDto, currentUser: UserEntity) {
     let order = await this.findOne(id);
     if (!order) throw new NotFoundException('Order not found');
 
@@ -205,7 +206,7 @@ export class OrdersService {
     return order;
   }
 
-  async cancelled(id: number, currentUser: User){
+  async cancelled(id: number, currentUser: UserEntity){
     let order = await this.findOne(id);
     if (!order) throw new NotFoundException('Order not found');
 

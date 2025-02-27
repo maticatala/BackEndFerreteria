@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from "class-validator";
+import { Roles } from "../interfaces";
 
 export class RegisterDto {
 
@@ -18,4 +19,7 @@ export class RegisterDto {
   @MinLength(6, {message: 'Password minimun character should be 6.'})
   password: string;
   
+  @IsEnum(Roles)
+    @IsOptional()
+    rol: Roles;
 }
