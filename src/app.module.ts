@@ -9,6 +9,7 @@ import { CurrentUserMiddleware } from './utility/middlewares/current-user.middle
 import { ContactModule } from './contact/contact.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     ProductsModule,
     OrdersModule,
     ContactModule,
+    ReportsModule,
     
   ],
   controllers: [],
