@@ -48,7 +48,7 @@ export class PaymentsService {
       notification_url: 'https://2686-186-124-42-34.ngrok-free.app/payments/webhook',
       auto_return: 'approved',
       external_reference: order.payments[0].id.toString(),
-    }
+    } 
 
     try {
       // console.log("order",order);
@@ -87,6 +87,7 @@ export class PaymentsService {
 
   async updatePayment(req, currentUser : User) {
   // Supongamos que la notificación trae un objeto con data y external_reference
+  console.log('metodo updatePayment');
     let newStatus;
     const notificationData = req.body.data;
     if(!notificationData ) return;

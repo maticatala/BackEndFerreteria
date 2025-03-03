@@ -35,8 +35,7 @@ export class PaymentsController {
 
     @Post('/webhook')
     async webhook(@Req() req, @CurrentUser() currentUser: User) {
-      await this.paymentsService.updatePayment(req, currentUser);
-      
+      this.paymentsService.updatePayment(req, currentUser);
     }
   
     @Get('failure/:orderId')
@@ -46,11 +45,11 @@ export class PaymentsController {
         return res.redirect('http://localhost:4200/#/checkout?cleanPendingOrder=true');
       } catch (error) {
         console.error('Error al eliminar la orden:', error);
-        // Redirigir con un parámetro de error adicional
-        return res.redirect('http://localhost:4200/#/checkout?cleanPendingOrder=true&error=delete_failed');
+        return res.redirect('http://localhost:4200/#/checkout?cleanPendingOrder=true&error=delete_failed'); // Redirigir con un parámetro de error adicional
         // return res.redirect('http://localhost:4200/#/checkout');
       }
     }
+
     
     @Get('pending')
     pending(@Req() req, @Res() res) {
