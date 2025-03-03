@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreateMpOrderDto } from './dto/create-mp-order.dto';
 import { CurrentUser } from 'src/utility/decorators/current-user.decorator';
 import { User } from 'src/auth/entities/user.entity';
 import { AuthenticationGuard } from 'src/utility/guards/authentication.guard';
 import { CreateOrderDto } from 'src/orders/dto/create-order.dto';
+import { OrdersService } from 'src/orders/orders.service';
 // import { CreateOrderDto2 } from 'src/orders/dto/create-order2.dto';
 
 @Controller('payments')
@@ -40,10 +41,17 @@ export class PaymentsController {
   
     @Get('failure/:orderId')
     async failure(@Res() res, @Param('orderId') orderId: string) {
-      // await this.paymentsService.deleteOrder(+orderId)
-      return res.redirect('http://localhost:4200/#/checkout');
+      try {
+        await this.paymentsService.deleteOrder(+orderId);
+        return res.redirect('http://localhost:4200/#/checkout?cleanPendingOrder=true');
+      } catch (error) {
+        console.error('Error al eliminar la orden:', error);
+        // Redirigir con un parámetro de error adicional
+        return res.redirect('http://localhost:4200/#/checkout?cleanPendingOrder=true&error=delete_failed');
+        // return res.redirect('http://localhost:4200/#/checkout');
+      }
     }
-  
+    
     @Get('pending')
     pending(@Req() req, @Res() res) {
       res.send('Tu pago esta pendiente');
@@ -75,4 +83,6 @@ export class PaymentsController {
       // }
     
   }
+
+
 }

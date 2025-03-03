@@ -113,9 +113,9 @@ export class PaymentsService {
     return HttpStatus.OK;
   }
 
-  // async deleteOrder(orderId: number) {
-  //   return await this.ordersService.deleteOrder(orderId);
-  // }
+  async deleteOrder(orderId: number) {
+    return await this.ordersService.deleteOrder(orderId);
+  }
 
 }
     

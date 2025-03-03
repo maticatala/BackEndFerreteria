@@ -61,6 +61,15 @@ export class OrdersController {
   cancelled(@Param('id') id: string, @CurrentUser() currentUser: User){
     return this.ordersService.cancelled(+id, currentUser);
   }
+
+  @UseGuards(AuthenticationGuard)
+  @Delete(':id')
+  async deleteOrder(
+    @Param('id') id: number,
+    @CurrentUser() currentUser: User,
+  ) {
+    return await this.ordersService.deleteOrder(id);
+  }
 }
 
 

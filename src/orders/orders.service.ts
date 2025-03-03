@@ -336,16 +336,18 @@ async updatePayment(
     return order;
   }
 
-  // async deleteOrder(id: number) {
-  //   const order = await this.findOne(id);
+  async deleteOrder(id: number) {
+    const order = await this.findOne(id);
 
-  //   if(!order) throw new NotFoundException('Order not found');
+    if(!order) throw new NotFoundException('Order not found');
 
-  //SE HACE CON EL REPOSITORIO DE ORDER PRODUCTS
+    await this.opRepository.delete({ order: { id } });
+    await this.paymentRepository.delete({ order: { id } });
 
+    await this.orderRepository.delete(id);
 
-  //   return await this.orderRepository.delete(id);
+    return;
 
-  // }
+  }
 
 }
