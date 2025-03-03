@@ -40,7 +40,7 @@ export class PaymentsController {
   
     @Get('failure/:orderId')
     async failure(@Res() res, @Param('orderId') orderId: string) {
-      // await this.paymentsService.deleteOrder(+orderId)
+      await this.paymentsService.deleteOrder(+orderId)
       return res.redirect('http://localhost:4200/#/checkout');
     }
   

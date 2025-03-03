@@ -45,7 +45,7 @@ export class PaymentsService {
           success: 'http://localhost:4200/#/payment-confirmation',
           pending: 'http://localhost:3000/payments/pending',
       },
-      notification_url: 'https://a0e9-2803-9800-98cd-6ae3-94a4-204e-fc9b-ba75.ngrok-free.app/payments/webhook',
+      notification_url: 'https://2686-186-124-42-34.ngrok-free.app/payments/webhook',
       auto_return: 'approved',
       external_reference: order.payments[0].id.toString(),
     }
@@ -113,9 +113,9 @@ export class PaymentsService {
     return HttpStatus.OK;
   }
 
-  // async deleteOrder(orderId: number) {
-  //   return await this.ordersService.deleteOrder(orderId);
-  // }
+  async deleteOrder(orderId: number) {
+    return await this.ordersService.deleteOrder(orderId);
+  }
 
 }
     
