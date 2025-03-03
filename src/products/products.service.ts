@@ -38,7 +38,7 @@ export class ProductsService {
 
     } catch (error) {
       if (error.status === 404) return error.response;
-      throw new InternalServerErrorException('Something terrible happen!');
+      throw new InternalServerErrorException('El error es en el create');
     }
   }
 

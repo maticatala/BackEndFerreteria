@@ -341,12 +341,13 @@ async updatePayment(
 
     if(!order) throw new NotFoundException('Order not found');
 
-    await this.opRepository.delete({ order: { id } });
-    await this.paymentRepository.delete({ order: { id } });
+  // SE HACE CON EL REPOSITORIO DE ORDER PRODUCTS
+  this.opRepository.delete({order: {id}});
+  this.paymentRepository.delete({order: {id}}); 
 
     await this.orderRepository.delete(id);
 
-    return;
+    return await this.orderRepository.delete(id);
 
   }
 
