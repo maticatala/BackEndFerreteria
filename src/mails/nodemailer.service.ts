@@ -9,7 +9,7 @@ export class NodemailerService implements IMailService {
     private mailerService: MailerService,
     @Inject('FRONTEND_BASE_URL') private frontendUrl: string,
   ) { }
-
+  
   async restorePassword(name:string, email: string, token: string): Promise<void> {
     const resetLink = `${this.frontendUrl}/auth/reset-password/${token}`;
 

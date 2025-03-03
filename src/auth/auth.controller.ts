@@ -45,6 +45,7 @@ export class AuthController {
       user: currentUser,
       token: this.authService.getJwtToken({id: currentUser.id})
     };
+    
   }
 
   //Devuelve true si esta disponible
