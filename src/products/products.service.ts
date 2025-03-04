@@ -19,11 +19,11 @@ export class ProductsService {
 
   async create(createProductDto: CreateProductDto, file: any, currentUser: User): Promise<Product> {
     try {
-      const { categoriesIds } = createProductDto;
+      const { categoriesIds } = createProductDto; // desestructuración
 
       const createdCategories = await this.categoryService.getCategoriesByIds(categoriesIds);
 
-      let newProduct = this.productRepository.create(createProductDto);
+      let newProduct = this.productRepository.create(createProductDto); 
 
       newProduct.addedBy = currentUser;
       newProduct.categories = createdCategories;
@@ -38,7 +38,7 @@ export class ProductsService {
 
     } catch (error) {
       if (error.status === 404) return error.response;
-      throw new InternalServerErrorException('Something terrible happen!');
+      throw new InternalServerErrorException('El error es en el create');
     }
   }
 
