@@ -16,6 +16,6 @@ export class CreateOrderDto {
 
   @Type(() => CreatePaymentDto)
   @ValidateNested()
-  payments: CreatePaymentDto[];
+  payments?: CreatePaymentDto[];
   
 }

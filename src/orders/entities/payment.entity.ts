@@ -25,7 +25,19 @@ export class Payment {
   status: string;
 
   @Column({default: null})
+  installments: number;
+
+  @Column({default: null})
+  paymentMethodType: string;
+
+  @Column({default: null})
+  paymentFinancialSystem: string;
+
+  @Column({default: null})
   transactionId: string;
+  
+  @Column({default: null})
+  orderMpId: string;
 
   @CreateDateColumn()
   paymentDate: Date;

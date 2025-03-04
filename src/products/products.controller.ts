@@ -16,7 +16,7 @@ import { Product } from './entities/product.entity';
 import { QueryProductDto } from './dto/query-product.dto';
 
 
-  const storage = diskStorage({
+  const storage = diskStorage({ // Multer options -> se esta definiendo una configuracion de almacenamiento para multer
   destination: './uploads',
   filename: (req, file, cb) => {
     cb(null,Date.now() + '_' +  file.originalname);
@@ -37,7 +37,7 @@ export class ProductsController {
     return this.productsService.findAll();
   }
   
-  @Get("getFile")
+  @Get("getFile") //se puede mejorar evitando ataque de path, un usuario malintencionado podría enviar ../../../../etc/passwd y acceder a archivos fuera de uploads.
   getFile(@Res() res: Response, @Query('fileName') fileName: string) {
     res.sendFile(path.join(__dirname, "../../../uploads/" + fileName));
   }
