@@ -22,17 +22,5 @@ export class PaymentsController {
     async webhook(@Req() req) {
       this.paymentsService.createOrder(req);
     }
-  
-    @Get('failure')
-    async failure(@Res() res) {
-      res.redirect(`${process.env.FRONTEND_BASE_URL}/#/checkout`);
-    }
-
-    
-    @Get('pending')
-    pending(@Req() req, @Res() res) {
-      res.redirect(`${process.env.FRONTEND_BASE_URL}/#/payment-pending`);
-  }
-
 
 }

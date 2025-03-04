@@ -39,9 +39,9 @@ export class PaymentsService {
     const body = {
       items: items,
       back_urls: {
-        failure: `${process.env.BACKEND_BASE_URL}/payments/failure`,
+        failure: `${process.env.FRONTEND_BASE_URL}/#/checkout`,
         success: `${process.env.FRONTEND_BASE_URL}/#/payment-confirmation`,
-        pending: `${process.env.BACKEND_BASE_URL}/payments/pending`,
+        pending: `${process.env.FRONTEND_BASE_URL}/#/payment-pending`,
       },
       notification_url:
         `${process.env.BACKEND_BASE_URL}/payments/webhook`,
