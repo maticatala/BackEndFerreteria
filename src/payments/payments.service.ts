@@ -23,7 +23,7 @@ export class PaymentsService {
     // Inicializar Mercado Pago con el access token
     const client = new MercadoPagoConfig({
       accessToken:
-        'APP_USR-8919265566267634-022418-4e66537ef95b3a836a093f0c232184d8-2289405776',
+        'APP_USR-1315918010132318-022418-cfae43cd8cecf0ac7b739db9d9c95c8e-659525359',
     });
 
     this.mercadopago = new Preference(client);
@@ -39,12 +39,12 @@ export class PaymentsService {
     const body = {
       items: items,
       back_urls: {
-        failure: `http://localhost:3000/payments/failure`,
-        success: 'http://localhost:4200/#/payment-confirmation',
-        pending: 'http://localhost:3000/payments/pending',
+        failure: `${process.env.BACKEND_BASE_URL}/payments/failure`,
+        success: `${process.env.FRONTEND_BASE_URL}/#/payment-confirmation`,
+        pending: `${process.env.BACKEND_BASE_URL}/payments/pending`,
       },
       notification_url:
-        'https://9577-190-2-98-31.ngrok-free.app/payments/webhook',
+        `${process.env.BACKEND_BASE_URL}/payments/webhook`,
       auto_return: 'approved',
       external_reference: JSON.stringify({
         currentUser: currentUser.id,

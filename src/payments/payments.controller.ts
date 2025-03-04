@@ -25,13 +25,13 @@ export class PaymentsController {
   
     @Get('failure')
     async failure(@Res() res) {
-      res.redirect('http://localhost:4200/#/checkout');
+      res.redirect(`${process.env.FRONTEND_BASE_URL}/#/checkout`);
     }
 
     
     @Get('pending')
     pending(@Req() req, @Res() res) {
-      res.redirect('http://localhost:4200/#/payment-pending');
+      res.redirect(`${process.env.FRONTEND_BASE_URL}/#/payment-pending`);
   }
 
 
