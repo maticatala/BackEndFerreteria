@@ -12,6 +12,12 @@ import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
+
+  @UseGuards(AuthenticationGuard)
+  @Get('/last-order')
+  async getLastUserOrder(@CurrentUser() currentUser: User){
+    return await this.ordersService.getLastUserOrder(currentUser);
+  }
  
   //Para crear un pedido necesitamos la direccion y los productos que se quieren pedir
   @UseGuards(AuthenticationGuard)
@@ -61,6 +67,17 @@ export class OrdersController {
   cancelled(@Param('id') id: string, @CurrentUser() currentUser: User){
     return this.ordersService.cancelled(+id, currentUser);
   }
+
+  @UseGuards(AuthenticationGuard)
+  @Delete(':id')
+  async deleteOrder(
+    @Param('id') id: number,
+    @CurrentUser() currentUser: User,
+  ) {
+    return await this.ordersService.deleteOrder(id);
+  }
+
+
 }
 
 
