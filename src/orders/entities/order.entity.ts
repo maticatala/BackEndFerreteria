@@ -4,7 +4,6 @@ import { OrderStatus } from "../enums/order-status.enum";
 import { Shipping } from "./shipping.entity";
 import { OrdersProducts } from "./orders-product.entity";
 import { Payment } from "./payment.entity";
-import { on } from "events";
 
 @Entity({name: 'orders'})
 export class Order {

@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsString, IsNumber, IsEnum, IsOptional, IsDateString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsOptional,
+  IsDateString,
+} from 'class-validator';
 import { PaymentStatus } from '../enums/payment-status.enum';
 
 export class CreatePaymentDto {
@@ -25,4 +32,20 @@ export class CreatePaymentDto {
   @IsOptional()
   @IsDateString()
   paymentDate?: Date;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Installments must be a number.' })
+  installments?: number;
+
+  @IsOptional()
+  @IsString({ message: 'payment method type must be a string.' })
+  paymentMethodType?: string;
+
+  @IsOptional()
+  @IsString({ message: 'payment financial system must be a string.' })
+  paymentFinancialSystem?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'order id must be a number.' })
+  orderMpId?: number;
 }

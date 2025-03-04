@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
+import { IsNumber, IsString } from "class-validator";
 
 //DTO de lineas de pedido
 export class ItemsDto {
@@ -14,8 +14,5 @@ export class ItemsDto {
 
     @IsNumber()
     quantity:   number;
-
-    @IsString()
-    currency_id: string;
 
 }
