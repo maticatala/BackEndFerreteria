@@ -135,9 +135,11 @@ export class OrdersService {
       relations: { order: true },
     });
 
+    
     if (!payment) return;
-
+    
     payment.status = updatePaymentStatusDto.status;
+
 
     const updatedPayment = await this.paymentRepository.save(payment);
 

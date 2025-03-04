@@ -10,9 +10,9 @@ export class ItemsDto {
     title: string;
 
     @IsNumber()
-    unit_price: number;
+    quantity:   number;
 
     @IsNumber()
-    quantity:   number;
+    unit_price: number;
 
 }

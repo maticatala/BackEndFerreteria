@@ -37,7 +37,7 @@ export class PaymentsService {
     const { items, shippingAddress } = createMpOrderDto;
 
     const body = {
-      items,
+      items: items,
       back_urls: {
         failure: `http://localhost:3000/payments/failure`,
         success: 'http://localhost:4200/#/payment-confirmation',
@@ -54,7 +54,7 @@ export class PaymentsService {
 
     try {
       const result = await this.mercadopago.create({ body });
-
+      
       return {init_point: result.init_point};
     } catch (error) {
       console.error('Error al crear la orden:', error);

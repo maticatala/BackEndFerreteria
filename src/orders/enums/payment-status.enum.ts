@@ -6,5 +6,6 @@ export enum PaymentStatus {
     REFUNDED = 'refunded',
     REJECTED = 'rejected',
     IN_PROCESS = 'in_process',
+    CANCELLED = 'cancelled',
 }
   

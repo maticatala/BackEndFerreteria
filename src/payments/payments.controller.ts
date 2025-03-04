@@ -26,7 +26,6 @@ export class PaymentsController {
     @Get('failure')
     async failure(@Res() res) {
       res.redirect('http://localhost:4200/#/checkout');
-      
     }
 
     
