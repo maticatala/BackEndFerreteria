@@ -30,30 +30,24 @@ export class PaymentsController {
     @UseGuards(AuthenticationGuard)
     @Post('/create-order') 
     async createOrder(@Body() createOrderDto: CreateOrderDto, @CurrentUser() currentUser: User): Promise<string> {
-      return await this.paymentsService.createOrder(createOrderDto, currentUser);
+      return await this.paymentsService.createPreferece(createOrderDto, currentUser);
     }
 
     @Post('/webhook')
-    async webhook(@Req() req, @CurrentUser() currentUser: User) {
-      this.paymentsService.updatePayment(req, currentUser);
+    async webhook(@Req() req) {
+      this.paymentsService.updatePayment(req);
     }
   
-    @Get('failure/:orderId')
-    async failure(@Res() res, @Param('orderId') orderId: string) {
-      try {
-        await this.paymentsService.deleteOrder(+orderId);
-        return res.redirect('http://localhost:4200/#/checkout?cleanPendingOrder=true');
-      } catch (error) {
-        console.error('Error al eliminar la orden:', error);
-        return res.redirect('http://localhost:4200/#/checkout?cleanPendingOrder=true&error=delete_failed'); // Redirigir con un parámetro de error adicional
-        // return res.redirect('http://localhost:4200/#/checkout');
-      }
+    @Get('failure')
+    async failure(@Res() res) {
+      res.redirect('http://localhost:4200/#/checkout');
+      
     }
 
     
     @Get('pending')
     pending(@Req() req, @Res() res) {
-      res.send('Tu pago esta pendiente');
+      res.redirect('http://localhost:4200/#/payment-pending');
       
 
       // if (req.body?.data?.id) {

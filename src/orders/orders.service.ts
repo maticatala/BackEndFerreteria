@@ -35,7 +35,7 @@ export class OrdersService {
       orderEntity.shippingAddress = shippingEntity;
       orderEntity.user = currentUser;
 
-            // Crear las entidades de pago y asignarlas a la orden
+      // Crear las entidades de pago y asignarlas a la orden
       const paymentEntities = createOrderDto.payments.map(paymentDto => {
         const payment = new Payment();
         Object.assign(payment, paymentDto);
@@ -43,6 +43,10 @@ export class OrdersService {
         return payment;
       });
       orderEntity.payments = paymentEntities;
+
+      if( orderEntity.payments[0].status !== 'approved' && orderEntity.payments[0].status !== 'pending'){
+        orderEntity.status = OrderStatus.CANCELLED //! En este punto estamos inicializando pedidos en efectivo como cancelados cuando deberia ser processing
+      } 
 
       const order = await this.orderRepository.save(orderEntity);
 
@@ -341,9 +345,9 @@ async updatePayment(
 
     if(!order) throw new NotFoundException('Order not found');
 
-  // SE HACE CON EL REPOSITORIO DE ORDER PRODUCTS
-  this.opRepository.delete({order: {id}});
-  this.paymentRepository.delete({order: {id}}); 
+    // SE HACE CON EL REPOSITORIO DE ORDER PRODUCTS
+    this.opRepository.delete({order: {id}});
+    this.paymentRepository.delete({order: {id}}); 
 
     await this.orderRepository.delete(id);
 
