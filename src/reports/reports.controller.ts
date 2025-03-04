@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 
 @Controller('reports')
@@ -34,7 +34,7 @@ export class ReportsController {
 
   @Get('dashboard')
   async getDashboardData(
-    @Query('period') period: 'monthly' | 'annual' | 'historical' = 'historical',
+    @Param('period') period: 'monthly' | 'annual' | 'historical' = 'historical',
     @Query('year') year?: number,
     @Query('month') month?: number
   ) {

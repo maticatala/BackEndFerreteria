@@ -10,7 +10,6 @@ import { ContactModule } from './contact/contact.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ReportsModule } from './reports/reports.module';
-import { MailModule } from './mail/mail.module';
 import { PaymentsController } from './payments/payments.controller';
 import { PaymentsModule } from './payments/payments.module';
 
@@ -41,7 +40,6 @@ import { PaymentsModule } from './payments/payments.module';
     OrdersModule,
     ContactModule,
     ReportsModule,
-    MailModule,
     PaymentsModule,
   ],
   controllers: [PaymentsController],
