@@ -8,11 +8,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   //* Habilitar CORS para poder consumir la API desde un lugar que no sea localhost:3000
-  app.enableCors({
-    origin: 'https://beyondlimitsapp.netlify.app',  // Cambia esto al dominio de tu frontend
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],    // Los métodos HTTP permitidos
-    allowedHeaders: ['Content-Type', 'Authorization'], // Los encabezados permitidos
-  });
+  app.enableCors();
   
   /*
     * Configuracion de ValidationPipe (Nos sirve para validar las columnas en los DTO):
