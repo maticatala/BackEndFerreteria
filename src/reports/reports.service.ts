@@ -41,7 +41,6 @@ export class ReportsService {
       // Usamos Date para obtener el último día del mes
       const lastDay = new Date(selectedYear, selectedMonth + 1, 0).getDate();
       endDate = new Date(selectedYear, selectedMonth, lastDay, 23, 59, 59, 999);
-      console.log({endDate});
       
       // Si el mes seleccionado es el actual, limitar a la fecha actual
       if (selectedYear === now.getFullYear() && selectedMonth === now.getMonth()) {
@@ -51,7 +50,6 @@ export class ReportsService {
       // Para periodo anual, usar el año seleccionado
       startDate = new Date(selectedYear, 0, 1);
       endDate = new Date(selectedYear, 11, 31, 23, 59, 59, 999);
-      console.log({endDate});
       
       // Si el año seleccionado es el actual, limitar a la fecha actual
       if (selectedYear === now.getFullYear()) {
@@ -62,9 +60,6 @@ export class ReportsService {
       startDate = new Date(2010, 0, 1);
     }
 
-    // Agregamos logs para diagnóstico
-    console.log(`Generando reporte - Período: ${period}, Año: ${selectedYear}, Mes: ${selectedMonth}`);
-    console.log(`Rango de fechas - Desde: ${startDate.toISOString()} - Hasta: ${endDate.toISOString()}`);
 
     // Obtener órdenes por período
     const orders = await this.ordersRepository.find({
@@ -76,7 +71,6 @@ export class ReportsService {
       relations: ['products'],
     });
 
-    console.log(`Órdenes encontradas para el período: ${orders.length}`);
 
     // Calcular métricas
     let totalRevenue = 0;
@@ -99,8 +93,6 @@ export class ReportsService {
       year: selectedYear,
       month: period === 'monthly' ? selectedMonth : undefined,
     };
-
-    console.log(`Resultado del reporte: ${JSON.stringify(result)}`);
     
     return result;
   }
@@ -164,9 +156,7 @@ export class ReportsService {
     year?: number,
     month?: number
   ) {
-    // Agregar log para diagnóstico
-    console.log(`Solicitud de dashboard - Período: ${period}, Año: ${year}, Mes: ${month}`);
-    
+   
     // Convertir parámetros a números para asegurar consistencia
     const numYear = year ? Number(year) : undefined;
     const numMonth = month !== undefined ? Number(month) : undefined;

@@ -13,7 +13,6 @@ export class ReportsController {
     @Query('year') year?: number,
     @Query('month') month?: number
   ) {
-    console.log(`Solicitud de resumen de ventas - Período: ${period}, Año: ${year}, Mes: ${month}`);
     return this.reportsService.getSalesSummary(period, year, month);
   }
 
@@ -34,12 +33,11 @@ export class ReportsController {
 
   @Get('dashboard')
   async getDashboardData(
-    @Param('period') period: 'monthly' | 'annual' | 'historical' = 'historical',
+    @Query('period') period: 'monthly' | 'annual' | 'historical' = 'historical',
     @Query('year') year?: number,
     @Query('month') month?: number
   ) {
-    console.log(`Solicitud de dashboard - Período: ${period}, Año: ${year}, Mes: ${month}`);
-    // Endpoint para obtener todos los datos para el dashboard en una sola llamada
+       // Endpoint para obtener todos los datos para el dashboard en una sola llamada
     return this.reportsService.getDashboardData(period, year, month);
   }
 }
