@@ -30,17 +30,17 @@ export class Order {
   updatedBy: User;
 
   //cascade true ya que al eliminar un pedido tambien eliminaremos su direccion de entrega
-  @OneToOne((type) => Shipping, (shipping) => shipping.order, { cascade: true })
+  @OneToOne((type) => Shipping, (shipping) => shipping.order, { cascade: true , onDelete: 'CASCADE'})
   @JoinColumn()
   shippingAddress: Shipping;
 
   //Un pedido debe tener una o mas lineas de pedido
-  @OneToMany((type) => OrdersProducts, (orderProduct) => orderProduct.order, { cascade: true })
+  @OneToMany((type) => OrdersProducts, (orderProduct) => orderProduct.order, { cascade: true, onDelete: 'CASCADE' })
   products: OrdersProducts[];
 
   @ManyToOne((type) => User, user => user.orders)
   user: User;
 
-  @OneToMany((type) => Payment, (payment) => payment.order, { cascade: true })
+  @OneToMany((type) => Payment, (payment) => payment.order, { cascade: true, onDelete: 'CASCADE' })
   payments: Payment[];
 }
