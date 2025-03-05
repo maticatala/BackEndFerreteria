@@ -10,6 +10,10 @@ import { OrdersService } from 'src/orders/orders.service';
 import { CreateOrderDto } from 'src/orders/dto/create-order.dto';
 import { PaymentStatus } from 'src/orders/enums/payment-status.enum';
 import { AuthService } from 'src/auth/auth.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Shipping } from 'src/orders/entities/shipping.entity';
+import { Transaction } from './entities/transactions.entity';
 
 @Injectable()
 export class PaymentsService {
@@ -17,13 +21,15 @@ export class PaymentsService {
   private payment: Payment;
 
   constructor(
+    @InjectRepository(Transaction)
+    private readonly transactionRepository: Repository<Transaction>,
     private readonly ordersService: OrdersService,
     private readonly authService: AuthService,
   ) {
     // Inicializar Mercado Pago con el access token
     const client = new MercadoPagoConfig({
       accessToken:
-        'APP_USR-1315918010132318-022418-cfae43cd8cecf0ac7b739db9d9c95c8e-659525359',
+      'APP_USR-1315918010132318-022418-cfae43cd8cecf0ac7b739db9d9c95c8e-659525359',
     });
 
     this.mercadopago = new Preference(client);
@@ -36,6 +42,20 @@ export class PaymentsService {
   ): Promise<any> {
     const { items, shippingAddress } = createMpOrderDto;
 
+    // Crear instancia de Shipping y asignar datos
+    const shipping = new Shipping();
+    Object.assign(shipping, shippingAddress);
+
+    // Crear instancia de Transaction y asignar datos
+    const transaction = new Transaction();
+    transaction.userId = currentUser.id;
+    transaction.shipping = shipping;
+
+    // Guardar la transacción (esto también guardará la dirección de envío debido al cascade)
+    const savedTransaction = await this.transactionRepository.save(transaction);
+
+    console.log('Transacción creada con ID:', savedTransaction.id);
+
     const body = {
       items: items,
       back_urls: {
@@ -46,10 +66,7 @@ export class PaymentsService {
       notification_url:
         `${process.env.BACKEND_BASE_URL}/payments/webhook`,
       auto_return: 'approved',
-      external_reference: JSON.stringify({
-        currentUser: currentUser.id,
-        shippingAddress,
-      }),
+      external_reference: savedTransaction.id,
     };
 
     try {
@@ -89,12 +106,19 @@ export class PaymentsService {
     }
 
     if (!newStatus) return;
-
+    
     const updatedOrder = await this.ordersService.updatePaymentStatusMp(payment.order.id.toString(), {status: newStatus})
-
+    
     if (updatedOrder) return HttpStatus.OK;
 
-    const er = JSON.parse(payment.external_reference);
+    const transaction = await this.transactionRepository.findOne({
+      where: {
+        id: payment.external_reference,
+      },
+      relations: { shipping: true },
+    })
+
+    const er = transaction;
 
     let orderedProducts = [];
 
@@ -107,7 +131,7 @@ export class PaymentsService {
     }
 
     const createOrderDto: CreateOrderDto = {
-      shippingAddress: er.shippingAddress,
+      shippingAddress: er.shipping,
       orderedProducts,
       payments: [
         {
@@ -118,14 +142,18 @@ export class PaymentsService {
           installments: payment.installments,
           paymentMethodType: payment.payment_type_id,
           paymentFinancialSystem: payment.payment_method_id,
+          transactionId: payment.external_reference,
           orderMpId: payment.order.id
         },
       ],
     };
 
-    const currentUser = await this.authService.findUserById(er.currentUser);
+    const currentUser = await this.authService.findUserById(er.userId);
 
     await this.ordersService.create(createOrderDto, currentUser);
+    const deleted = await this.transactionRepository.delete(er.id);
+
+    console.log(deleted);
 
     return HttpStatus.OK;
   }

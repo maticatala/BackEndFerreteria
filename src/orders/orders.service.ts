@@ -140,7 +140,6 @@ export class OrdersService {
     
     payment.status = updatePaymentStatusDto.status;
 
-
     const updatedPayment = await this.paymentRepository.save(payment);
 
     const processingStatuses = ['approved', 'pending', 'in_process'];
