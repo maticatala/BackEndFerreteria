@@ -211,6 +211,8 @@ export class AuthService {
         resetPasswordToken,
       );
 
+    if (!user) throw new UnprocessableEntityException();
+
     user.resetPasswordToken = null;
 
     user.password = await bcryptjs.hashSync(password, 10);
