@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards, Request, Query, Patch, Delete, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards, Patch, Delete } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, CreateUserDto, UpdateUserDto } from './dto';
@@ -7,6 +7,8 @@ import { LoginResponse, Roles } from './interfaces';
 import { CurrentUser } from 'src/utility/decorators/current-user.decorator';
 import { AuthenticationGuard } from 'src/utility/guards/authentication.guard';
 import { AuthorizeGuard } from 'src/utility/guards/authorization.guard';
+import { RequestResetPasswordDto } from './dto/request-reset-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 
 @Controller('auth')
@@ -15,6 +17,20 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
   ) { }
+  
+  @Patch('/request-reset-password')
+  async requestResetPassword(
+    @Body() requestResetPasswordDto: RequestResetPasswordDto,
+  ): Promise<void> {
+    return this.authService.requestResetPassword(requestResetPasswordDto);
+  }
+
+  @Patch('/reset-password')
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ): Promise<void> {
+    return await this.authService.resetPassword(resetPasswordDto);
+  }
   
   @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Get()
@@ -29,6 +45,7 @@ export class AuthController {
       user: currentUser,
       token: this.authService.getJwtToken({id: currentUser.id})
     };
+    
   }
 
   //Devuelve true si esta disponible
@@ -71,10 +88,10 @@ export class AuthController {
     return this.authService.register(newUser);
   }
 
+
   @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Delete(':id')
   delete(@Param('id') id: number) {
     return this.authService.delete(+id);
   }
-  
 }

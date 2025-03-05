@@ -1,4 +1,12 @@
 {
   "singleQuote": true,
-  "trailingComma": "all"
+  "trailingComma": "all",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "assets": [{
+      "include": "mails/templates/**/*",
+      "outDir": "dist/src"
+    }],
+    "watchAssets": true
+  }
 }
