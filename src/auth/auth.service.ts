@@ -165,6 +165,8 @@ export class AuthService {
   ): Promise<void> {
     const { email } = requestResetPasswordDto;
 
+
+    console.log(email);
     const user = await this.validateUserExistsByEmail(email);
 
     await this.assignResetPasswordToken(user);
