@@ -1,5 +1,6 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Order } from "./order.entity";
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Order } from './order.entity';
+import { Transaction } from 'src/payments/entities/transactions.entity';
 
 @Entity({ name: 'shippings' })
 export class Shipping {
@@ -9,7 +10,7 @@ export class Shipping {
   @Column()
   phone: string;
 
-  @Column({default:' '})
+  @Column({ default: ' ' })
   name: string;
 
   @Column()
@@ -27,7 +28,11 @@ export class Shipping {
   @Column()
   country: string;
 
-  //Un pedido tiene una unica dirección de entrega y una dirección de entrega pertenece a un único pedido
-  @OneToOne((type) => Order, order => order.shippingAddress)
+  // Relación OneToOne con Order
+  @OneToOne(() => Order, (order) => order.shippingAddress)
   order: Order;
+
+  // Relación OneToOne con Transaction
+  @OneToOne(() => Transaction, (transaction) => transaction.shipping)
+  transaction: Transaction;
 }
