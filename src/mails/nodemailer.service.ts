@@ -40,7 +40,7 @@ export class NodemailerService implements IMailService {
       try {
         await this.mailerService.sendMail({
           from: `"Formulario de Contacto Beyond Limits" <${this.sanitize(contactDto.email)}>`,
-          to: 'matiasncatala@gmail.com',
+          to: 'b.l.3d.impresiones@gmail.com',
           replyTo: this.sanitize(contactDto.email),
           subject: `Beyond Limits: ${this.sanitize(contactDto.subject)}`,
           template: './adminEmail',

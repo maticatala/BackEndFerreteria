@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, In, Not } from 'typeorm';
 import { Order } from '../orders/entities/order.entity';
 import { OrdersProducts } from '../orders/entities/orders-product.entity';
 import { Product } from '../products/entities/product.entity';
 import { Category } from '../categories/entities/category.entity';
 import { OrderStatus } from '../orders/enums/order-status.enum';
+import { PaymentStatus } from 'src/orders/enums/payment-status.enum';
+import { DashboardData, OrderStatusCount, PopularCategory, SalesSummary, TopProduct } from './interfaces/dashboard-data.interface';
 
 @Injectable()
 export class ReportsService {
@@ -41,6 +43,7 @@ export class ReportsService {
       // Usamos Date para obtener el último día del mes
       const lastDay = new Date(selectedYear, selectedMonth + 1, 0).getDate();
       endDate = new Date(selectedYear, selectedMonth, lastDay, 23, 59, 59, 999);
+      console.log({endDate});
       
       // Si el mes seleccionado es el actual, limitar a la fecha actual
       if (selectedYear === now.getFullYear() && selectedMonth === now.getMonth()) {
@@ -50,6 +53,7 @@ export class ReportsService {
       // Para periodo anual, usar el año seleccionado
       startDate = new Date(selectedYear, 0, 1);
       endDate = new Date(selectedYear, 11, 31, 23, 59, 59, 999);
+      console.log({endDate});
       
       // Si el año seleccionado es el actual, limitar a la fecha actual
       if (selectedYear === now.getFullYear()) {
@@ -60,66 +64,92 @@ export class ReportsService {
       startDate = new Date(2010, 0, 1);
     }
 
-
-    // Obtener órdenes por período
-    const orders = await this.ordersRepository.find({
+    // Total ingresos (contando sin pagar y pagados y entregados o en proceso de envío)
+    const totalOrders: Order[] = await this.ordersRepository.find({
       where: {
         orderAt: Between(startDate, endDate),
-        // Suponemos que los pedidos completados o entregados son los que cuentan como ventas realizadas
-        status: OrderStatus.DELIVERED, 
+        status: Not(OrderStatus.CANCELLED),
+        payments: { status: In([PaymentStatus.PENDING, PaymentStatus.IN_PROCESS, PaymentStatus.COMPLETED, PaymentStatus.APPROVED]) } 
       },
-      relations: ['products'],
+      relations: ['products', 'payments'],
     });
 
-
-    // Calcular métricas
-    let totalRevenue = 0;
+    // ingresos confirmados con entrega completada y pago completado
+    const deliveredOrders: Order[] = await this.ordersRepository.find({
+      where: {
+        orderAt: Between(startDate, endDate),
+        status: OrderStatus.DELIVERED,
+        payments: { status: In([PaymentStatus.COMPLETED, PaymentStatus.APPROVED]) }
+      },
+      relations: ['products', 'payments'] 
+    });
     
-    // Calculamos los ingresos totales sumando (precio * cantidad) de cada línea de pedido
-    for (const order of orders) {
-      for (const orderProduct of order.products) {
-        totalRevenue += parseFloat(orderProduct.product_unit_price.toString()) * orderProduct.product_quantity;
-      }
-    }
+    // Ingresos con pago completado y sin entregar
+    const pendingDeliveryOrders:Order[] = await this.ordersRepository.find({
+      where: {
+        orderAt: Between(startDate, endDate),
+        status: In([OrderStatus.PROCESSING, OrderStatus.SHIPPED]), 
+        payments: { status: In([PaymentStatus.COMPLETED, PaymentStatus.APPROVED]) }
+      },
+      relations: ['products', 'payments']
+    });
 
-    const orderCount = orders.length;
-    const averageTicket = orderCount > 0 ? totalRevenue / orderCount : 0;
+    const expectedOrders: Order[] = await this.ordersRepository.find({
+      where: {
+        orderAt: Between(startDate, endDate),
+        payments: { status: In([PaymentStatus.PENDING, PaymentStatus.IN_PROCESS]) }
+      },
+      relations: ['products', 'payments']
+    });
 
-    const result = {
+    // Calculo de ingresos
+    const totalRevenue = this.calculateRevenue(totalOrders);
+    const confirmedRevenue = this.calculateRevenue(deliveredOrders);
+    const pendingDeliveryRevenue = this.calculateRevenue(pendingDeliveryOrders);
+    const expectedRevenue = this.calculateRevenue(expectedOrders);
+
+    // Promedio de ventas por pedido - pedidos completados (pedidos entregados y pagos)
+    const orderCount = deliveredOrders.length;
+    const averageTicket = orderCount > 0 ? confirmedRevenue / orderCount : 0;
+
+    const salesSummary: SalesSummary = {
       totalRevenue,
+      confirmedRevenue,
+      pendingDeliveryRevenue,
+      expectedRevenue,
       orderCount,
       averageTicket,
       period,
       year: selectedYear,
       month: period === 'monthly' ? selectedMonth : undefined,
     };
-    
-    return result;
+  
+    return salesSummary;
   }
 
-  async getOrdersStatus() {
-    // Obtener conteo de órdenes por estado
-    const ordersByStatus = await this.ordersRepository
+  private calculateRevenue(orders: Order[]): number {
+    return orders.reduce((total, order) => 
+      total + (order.products?.reduce((subtotal, orderProduct) => 
+        subtotal + (orderProduct.product_unit_price * orderProduct.product_quantity), 0) || 0)
+    , 0);
+  }
+
+
+  async getOrdersStatus(): Promise<OrderStatusCount[]> {
+    // Obtener conteo de pedidos por estado
+    const ordersByStatus: OrderStatusCount[] = await this.ordersRepository
       .createQueryBuilder('order')
       .select('order.status', 'status')
       .addSelect('COUNT(order.id)', 'count')
       .groupBy('order.status')
       .getRawMany();
 
-    // Obtener órdenes pendientes de procesamiento
-    const pendingOrders = await this.ordersRepository.count({
-      where: { status: OrderStatus.PROCESSING },
-    });
-
-    return {
-      ordersByStatus,
-      pendingOrders,
-    };
+    return ordersByStatus;
   }
 
-  async getTopProducts(limit: number = 10) {
+  async getTopProducts(limit: number = 10): Promise<TopProduct[]> {
     // Obtener productos más vendidos basado en cantidad vendida
-    const topProducts = await this.ordersProductsRepository
+    const topProducts: TopProduct[] = await this.ordersProductsRepository
       .createQueryBuilder('orderProduct')
       .select('product.id', 'productId')
       .addSelect('product.name', 'productName')
@@ -134,9 +164,9 @@ export class ReportsService {
     return topProducts;
   }
 
-  async getPopularCategories(limit: number = 5) {
+  async getPopularCategories(limit: number = 5): Promise<PopularCategory[]> {
     // Obtener categorías más populares basado en ventas
-    const popularCategories = await this.ordersProductsRepository
+    const popularCategories: PopularCategory[] = await this.ordersProductsRepository
       .createQueryBuilder('orderProduct')
       .select('category.id', 'categoryId')
       .addSelect('category.categoryName', 'categoryName')
@@ -156,24 +186,19 @@ export class ReportsService {
     year?: number,
     month?: number
   ) {
-   
+
     // Convertir parámetros a números para asegurar consistencia
     const numYear = year ? Number(year) : undefined;
     const numMonth = month !== undefined ? Number(month) : undefined;
-    
-    // Obtener todos los datos para el dashboard en una sola llamada
-    const [salesSummary, ordersStatus, topProducts, popularCategories] = await Promise.all([
-      this.getSalesSummary(period, numYear, numMonth),
-      this.getOrdersStatus(),
-      this.getTopProducts(5),
-      this.getPopularCategories(5),
-    ]);
+  
 
-    return {
-      salesSummary,
-      ordersStatus,
-      topProducts,
-      popularCategories,
-    };
+    const dashboardData: DashboardData = {
+      salesSummary: await this.getSalesSummary(period, numYear, numMonth),
+      ordersStatus: await this.getOrdersStatus(),
+      topProducts: await this.getTopProducts(5),
+      popularCategories: await this.getPopularCategories(5),
+    }
+
+    return dashboardData;
   }
 }
