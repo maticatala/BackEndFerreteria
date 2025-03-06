@@ -43,7 +43,7 @@ export class ReportsService {
       // Usamos Date para obtener el último día del mes
       const lastDay = new Date(selectedYear, selectedMonth + 1, 0).getDate();
       endDate = new Date(selectedYear, selectedMonth, lastDay, 23, 59, 59, 999);
-      console.log({endDate});
+
       
       // Si el mes seleccionado es el actual, limitar a la fecha actual
       if (selectedYear === now.getFullYear() && selectedMonth === now.getMonth()) {
@@ -53,7 +53,7 @@ export class ReportsService {
       // Para periodo anual, usar el año seleccionado
       startDate = new Date(selectedYear, 0, 1);
       endDate = new Date(selectedYear, 11, 31, 23, 59, 59, 999);
-      console.log({endDate});
+
       
       // Si el año seleccionado es el actual, limitar a la fecha actual
       if (selectedYear === now.getFullYear()) {

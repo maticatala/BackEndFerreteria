@@ -63,13 +63,8 @@ export class NodemailerService implements IMailService {
         return emailResponseDto;
   
       } catch (error) {
-        console.error('Error al enviar email', error);
-        const emailResponseDto: EmailResponseDto = {
-          success: false,
-          message: 'No se pudo enviar el email',
-          };
-  
-        return emailResponseDto;
+        console.log(error);
+        throw new InternalServerErrorException('No se pudo enviar el email!');
       }
     }
 

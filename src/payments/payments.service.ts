@@ -28,8 +28,7 @@ export class PaymentsService {
   ) {
     // Inicializar Mercado Pago con el access token
     const client = new MercadoPagoConfig({
-      accessToken:
-      'APP_USR-1315918010132318-022418-cfae43cd8cecf0ac7b739db9d9c95c8e-659525359',
+      accessToken:process.env.MERCADOPAGO_ACCESSTOKEN,
     });
 
     this.mercadopago = new Preference(client);
@@ -53,8 +52,6 @@ export class PaymentsService {
 
     // Guardar la transacción (esto también guardará la dirección de envío debido al cascade)
     const savedTransaction = await this.transactionRepository.save(transaction);
-
-    console.log('Transacción creada con ID:', savedTransaction.id);
 
     const body = {
       items: items,
@@ -152,8 +149,6 @@ export class PaymentsService {
 
     await this.ordersService.create(createOrderDto, currentUser);
     const deleted = await this.transactionRepository.delete(er.id);
-
-    console.log(deleted);
 
     return HttpStatus.OK;
   }
