@@ -39,16 +39,17 @@ export class ProductsController {
   
   @Get("getFile") //se puede mejorar evitando ataque de path, un usuario malintencionado podría enviar ../../../../etc/passwd y acceder a archivos fuera de uploads.
   getFile(@Res() res: Response, @Query('fileName') fileName: string) {
+
     res.sendFile(path.join(__dirname, "../../../uploads/" + fileName));
   }
   
 
   @Get('/:id')
   findOne(@Param('id') id: string) {
+    console.log({id})
     return this.productsService.findOne(+id);
   }
   
-
   @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Post()
   @UseInterceptors(FileInterceptor('file', { storage }))

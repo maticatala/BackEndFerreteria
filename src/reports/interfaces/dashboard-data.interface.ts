@@ -26,6 +26,8 @@ totalRevenue: string;
 export interface PopularCategory {
 categoryId: number;
 categoryName: string;
+description: string;
+imagen: string;
 orderCount: string;
 }
 

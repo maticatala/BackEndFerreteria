@@ -26,10 +26,10 @@ export class ReportsController {
   //   return this.reportsService.getTopProducts(limit);
   // }
 
-  // @Get('popular-categories')
-  // async getPopularCategories(@Query('limit') limit: number = 5) {
-  //   return this.reportsService.getPopularCategories(limit);
-  // }
+  @Get('popular-categories')
+  async getPopularCategories(@Query('limit') limit: number = 5) {
+    return this.reportsService.getPopularCategories(limit);
+  }
 
   @Get('dashboard')
   async getDashboardData(

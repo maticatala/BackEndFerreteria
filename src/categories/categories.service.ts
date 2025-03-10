@@ -14,13 +14,15 @@ export class CategoriesService {
     private readonly categoryRepository: Repository<Category>
   ) {}
 
-  async createCategory(category: CreateCategoryDto, currentUser: User): Promise<Category>{
+  async createCategory(category: CreateCategoryDto, file: any, currentUser: User): Promise<Category>{
     try {
 
       const newCategory = this.categoryRepository.create(category);
 
       newCategory.addedBy = currentUser;
-    
+      newCategory.imagen = file.filename;
+      newCategory.isDeleted = false;
+
       return await this.categoryRepository.save(newCategory);
 
     } catch (error) {
@@ -111,6 +113,8 @@ export class CategoriesService {
       return categoryFound;
     }
 
+
+    //Podria implementarse la baja logica (atributo isDelete ya existente)
     async delete(id: number): Promise<Category> {    // return `This action removes a #${id} category`;
     try {
       const categoryFound = await this.findOne(id);
@@ -123,14 +127,17 @@ export class CategoriesService {
     }
   }
 
-  async update(id: number, fields: Partial<UpdateCategoryDto>): Promise<Category> {
+  async update(id: number, fields: Partial<UpdateCategoryDto>, file: any): Promise<Category> {
     try {    
-
-      const category = await this.findOneByName(fields.categoryName);
-
-      if (category) throw new BadRequestException(`the name ${category.categoryName} is aleady in use`) 
-
       const categoryFound = await this.findOne(id);
+     
+      if (categoryFound.categoryName !== fields.categoryName) {
+        const category = await this.findOneByName(fields.categoryName);
+        if (category) throw new BadRequestException(`the name ${category.categoryName} is aleady in use`) 
+      }
+      
+      if (fields.description) categoryFound.description = fields.description;
+      if (file) categoryFound.imagen = file.filename;
       
       this.categoryRepository.merge(categoryFound, fields);
 

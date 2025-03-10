@@ -11,11 +11,20 @@ export class Category{
   @Column({unique: true})
   categoryName: string
 
+  @Column()
+  description: string;
+
+  @Column()
+  imagen: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ default: false, select: false })
+  isDeleted: boolean;
 
   @ManyToOne((type) => User, user => user.categories)
   addedBy: User;
